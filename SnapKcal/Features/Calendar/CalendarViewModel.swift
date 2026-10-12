@@ -25,7 +25,9 @@ final class CalendarViewModel {
     }
 
     var weekdaySymbols: [String] {
-        let symbols = calendar.veryShortStandaloneWeekdaySymbols
+        var english = calendar
+        english.locale = AppLocale.current
+        let symbols = english.veryShortStandaloneWeekdaySymbols
         let shift = calendar.firstWeekday - 1
         return Array(symbols[shift...] + symbols[..<shift])
     }

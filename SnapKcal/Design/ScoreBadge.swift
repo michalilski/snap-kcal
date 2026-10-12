@@ -14,13 +14,32 @@ struct ScoreBadge: View {
         }
     }
 
+    static func color(for score: Int) -> Color {
+        switch score {
+        case 7...: Theme.Color.textPrimary
+        case 5...6: Theme.Color.textSecondary
+        default: Theme.Color.danger
+        }
+    }
+
     var body: some View {
-        Text(showsNumber ? "\(score)" : Self.grade(for: score))
-            .font(.system(size: showsNumber ? 18 : 14, weight: .black))
-            .foregroundStyle(Theme.Color.carbon)
-            .frame(width: showsNumber ? 34 : 26, height: showsNumber ? 34 : 26)
-            .background(Theme.Color.surface)
-            .overlay(Rectangle().stroke(Theme.Color.carbon, lineWidth: 1.5))
+        Text(showsNumber ? String(format: "%02d/10", score) : "[\(Self.grade(for: score))]")
+            .font(Theme.Font.data.weight(.semibold))
+            .foregroundStyle(Self.color(for: score))
             .accessibilityLabel(Text("Health score \(score) of 10"))
+    }
+}
+
+struct Tag: View {
+    let text: String
+    var color: Color = Theme.Color.textSecondary
+
+    var body: some View {
+        Text(text)
+            .font(Theme.Font.data)
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .overlay(Rectangle().stroke(Theme.Color.border, lineWidth: 1))
     }
 }

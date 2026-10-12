@@ -22,7 +22,7 @@ struct DayLogView: View {
             if let today, let capture {
                 DayLogContent(today: today, capture: capture, showsTitle: mode != .today)
             } else {
-                Theme.Color.canvas
+                Theme.Color.background
             }
         }
         .task {
@@ -52,8 +52,8 @@ private struct DayLogContent: View {
             }
             snapBar
         }
-        .background(Theme.Color.canvas)
-        .navigationTitle(showsTitle ? today.anchor.formatted(date: .abbreviated, time: .omitted) : "")
+        .background(Theme.Color.background)
+        .navigationTitle(showsTitle ? today.anchor.appFormatted(.dateTime.day().month(.abbreviated).year()) : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(showsTitle ? .visible : .hidden, for: .navigationBar)
         .navigationDestination(for: MealRoute.self) { route in
@@ -98,11 +98,13 @@ private struct DayLogContent: View {
     private var snapBar: some View {
         VStack(spacing: Theme.Spacing.s) {
             if !environment.hasActiveKey {
-                Text("Add an API key in SETUP")
-                    .uiLabelStyle(Theme.Color.carbon)
+                Label("Add an API key in SETUP", systemImage: "key")
+                    .font(Theme.Font.body)
+                    .foregroundStyle(Theme.Color.warning)
                     .padding(Theme.Spacing.s)
                     .frame(maxWidth: .infinity)
-                    .background(Theme.Color.amber)
+                    .tile(Theme.Color.warning.opacity(0.1), stroke: Theme.Color.warning.opacity(0.4))
+                    .padding(.horizontal, Theme.Spacing.l)
                     .accessibilityIdentifier("missingKeyBanner")
             }
             HStack {
@@ -113,13 +115,13 @@ private struct DayLogContent: View {
                     .overlay(alignment: .trailing) {
                         Button { snap(.library) } label: {
                             Image(systemName: "photo.on.rectangle")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundStyle(Theme.Color.carbon)
+                                .font(.system(size: 17))
+                                .foregroundStyle(Theme.Color.textSecondary)
                                 .frame(width: 44, height: 44)
-                                .background(Circle().fill(Theme.Color.amber))
+                                .overlay(Rectangle().stroke(Theme.Color.border, lineWidth: 1))
                         }
                         .disabled(!environment.hasActiveKey)
-                        .offset(x: 64)
+                        .offset(x: 68)
                         .accessibilityLabel(Text("Pick from library"))
                         .accessibilityIdentifier("libraryButton")
                     }
@@ -159,23 +161,26 @@ private struct DayMealsList: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             if meals.isEmpty {
-                Text("No meals yet. Tap SNAP to log one.")
-                    .font(Theme.Font.body)
-                    .foregroundStyle(Theme.Color.carbon)
-                    .frame(maxWidth: .infinity, minHeight: 120)
-                    .background(Theme.Color.lavender)
+                VStack(spacing: Theme.Spacing.s) {
+                    Image(systemName: "camera.viewfinder").font(.system(size: 28, weight: .light))
+                    Text("No meals yet. Tap SNAP to log one.").font(Theme.Font.body)
+                }
+                .foregroundStyle(Theme.Color.textMuted)
+                .frame(maxWidth: .infinity, minHeight: 140)
+                .tile(Theme.Color.background)
+                .padding(.horizontal, Theme.Spacing.l)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
             }
             ForEach(meals) { meal in
                 MealRow(meal: meal) { capture.retry(meal: meal) }
                     .background(NavigationLink(value: MealRoute(id: meal.persistentModelID)) { EmptyView() }.opacity(0))
-                .listRowInsets(EdgeInsets(top: 4, leading: Theme.Spacing.l, bottom: 4, trailing: Theme.Spacing.l))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button("Delete", role: .destructive) { today.delete(meal) }
-                }
+                    .listRowInsets(EdgeInsets(top: 3, leading: Theme.Spacing.l, bottom: 4, trailing: Theme.Spacing.l))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button("Delete", role: .destructive) { today.delete(meal) }
+                    }
             }
         }
         .listStyle(.plain)
@@ -183,7 +188,7 @@ private struct DayMealsList: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             HStack {
                 Button { today.step(days: -1) } label: { Image(systemName: "chevron.left") }
                     .accessibilityLabel(Text("Previous day"))
@@ -197,13 +202,16 @@ private struct DayMealsList: View {
                     .disabled(!today.canStepForward)
             }
             .buttonStyle(.plain)
-            .foregroundStyle(Theme.Color.carbon)
-            KcalPlate(eaten: today.total(for: meals), target: today.targetKcal)
+            .foregroundStyle(Theme.Color.textSecondary)
+            KcalSummary(eaten: today.total(for: meals), target: today.targetKcal)
         }
-        .plate(padding: Theme.Spacing.l)
+        .panel()
+        .padding(.horizontal, Theme.Spacing.l)
+        .padding(.top, Theme.Spacing.s)
+        .padding(.bottom, Theme.Spacing.m)
     }
 
     private var dateTitle: String {
-        today.isToday ? String(localized: "Today") : today.anchor.formatted(.dateTime.weekday(.wide).day().month(.abbreviated))
+        today.isToday ? String(localized: "Today") : today.anchor.appFormatted(.dateTime.weekday(.wide).day().month(.abbreviated))
     }
 }

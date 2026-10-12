@@ -14,7 +14,7 @@ struct MealResultSheet: View {
             }
             .padding(Theme.Spacing.l)
         }
-        .background(Theme.Color.periwinkle.ignoresSafeArea())
+        .background(Theme.Color.background.ignoresSafeArea())
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
@@ -27,7 +27,8 @@ struct MealResultSheet: View {
                 .scaledToFill()
                 .frame(maxWidth: .infinity, maxHeight: 220)
                 .clipped()
-                .overlay(Rectangle().stroke(Theme.Color.carbon, lineWidth: 2))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.panel))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(Theme.Color.border, lineWidth: 1))
                 .accessibilityHidden(true)
         }
     }
@@ -39,16 +40,16 @@ struct MealResultSheet: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
                 LoadingLabel(text: "Reading your plate…")
                     .accessibilityIdentifier("analyzingLabel")
-                Button("Close") { viewModel.dismissWhileAnalyzing() }.buttonStyle(.dark)
+                Button("Close") { viewModel.dismissWhileAnalyzing() }.buttonStyle(.minimal)
             }
         case .result:
             if let meal = viewModel.currentMeal { ResultDetails(meal: meal, viewModel: viewModel, isAdjusting: $isAdjusting, isAddingNote: $isAddingNote) }
         case .notFood:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                Text("No food detected").font(Theme.Font.title).foregroundStyle(Theme.Color.carbon)
+                Text("No food detected").font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
                     .accessibilityIdentifier("noFoodLabel")
                 Text("Try a photo where the meal fills most of the frame.").font(Theme.Font.body)
-                Button("Retake") { viewModel.retake() }.buttonStyle(.commit)
+                Button("Retake") { viewModel.retake() }.buttonStyle(.primary)
             }
         case .failed(_, let message):
             failed(message)
@@ -59,12 +60,12 @@ struct MealResultSheet: View {
 
     private func failed(_ message: String) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-            Text("Analysis failed").font(Theme.Font.title).foregroundStyle(Theme.Color.red)
-            Text(message).font(Theme.Font.body).foregroundStyle(Theme.Color.carbon)
+            Text("Analysis failed").font(Theme.Font.title).foregroundStyle(Theme.Color.danger)
+            Text(message).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
                 .accessibilityIdentifier("failedMessage")
             Text("The photo is kept in your log, you can retry later.").font(Theme.Font.micro)
             HStack {
-                Button("Retry") { viewModel.retry() }.buttonStyle(.commit).accessibilityIdentifier("retryButton")
+                Button("Retry") { viewModel.retry() }.buttonStyle(.primary).accessibilityIdentifier("retryButton")
                 if !alternativeModels.isEmpty {
                     Menu {
                         ForEach(alternativeModels) { model in
@@ -73,10 +74,10 @@ struct MealResultSheet: View {
                     } label: {
                         Text("Switch model")
                     }
-                    .buttonStyle(.primary)
+                    .buttonStyle(.secondary)
                 }
                 Spacer()
-                Button("Delete") { viewModel.discard() }.buttonStyle(.destructive)
+                Button("Delete") { viewModel.discard() }.buttonStyle(.danger)
             }
         }
     }
@@ -91,12 +92,12 @@ private struct ResultDetails: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             KcalHero(kcal: meal.kcal, low: meal.kcalLow, high: meal.kcalHigh)
-            Text(meal.name).font(Theme.Font.title).foregroundStyle(Theme.Color.carbon)
+            Text(meal.name).font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
                 .accessibilityIdentifier("resultMealName")
-            Text(meal.summary).font(Theme.Font.body).lineSpacing(4).foregroundStyle(Theme.Color.carbon)
+            Text(meal.summary).font(Theme.Font.body).lineSpacing(4).foregroundStyle(Theme.Color.textPrimary)
             HStack(alignment: .top, spacing: Theme.Spacing.m) {
                 ScoreBadge(score: meal.healthScore, showsNumber: true)
-                Text(meal.scoreReason).font(Theme.Font.body).foregroundStyle(Theme.Color.carbon)
+                Text(meal.scoreReason).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
             }
             if !meal.tip.isEmpty { TipBox(text: meal.tip) }
             MacroChips(meal: meal)
@@ -110,11 +111,11 @@ private struct ResultDetails: View {
     private var actions: some View {
         VStack(spacing: Theme.Spacing.s) {
             HStack {
-                Button("Done") { viewModel.finish() }.buttonStyle(.commit).accessibilityIdentifier("doneButton")
-                Button("Adjust") { isAdjusting.toggle() }.buttonStyle(.primary)
-                Button("Add note") { isAddingNote.toggle() }.buttonStyle(.primary)
+                Button("Done") { viewModel.finish() }.buttonStyle(.primary).accessibilityIdentifier("doneButton")
+                Button("Adjust") { isAdjusting.toggle() }.buttonStyle(.secondary)
+                Button("Add note") { isAddingNote.toggle() }.buttonStyle(.secondary)
             }
-            Button("Delete") { viewModel.discard() }.buttonStyle(.destructive)
+            Button("Delete") { viewModel.discard() }.buttonStyle(.danger)
         }
         .frame(maxWidth: .infinity)
     }
@@ -128,11 +129,11 @@ struct KcalHero: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .lastTextBaseline, spacing: Theme.Spacing.s) {
-                OutlinedText(text: kcal.formatted())
+                MetricText(text: kcal.formatted())
                 Text("kcal").uiLabelStyle()
             }
             if high > 0 {
-                Text("\(low.formatted())–\(high.formatted()) kcal").font(Theme.Font.micro).foregroundStyle(Theme.Color.carbon)
+                Text("\(low.formatted())–\(high.formatted()) kcal").font(Theme.Font.data).foregroundStyle(Theme.Color.textMuted)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -145,19 +146,16 @@ struct TipBox: View {
     let text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Tip").uiLabelStyle()
-                .padding(.horizontal, Theme.Spacing.s)
-                .padding(.vertical, Theme.Spacing.xs)
-                .background(Theme.Color.amber)
-            Text(text)
-                .font(Theme.Font.body)
-                .foregroundStyle(Theme.Color.carbon)
-                .padding(Theme.Spacing.m)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.Color.surface)
-                .overlay(Rectangle().stroke(Theme.Color.amber, lineWidth: 2))
+        HStack(alignment: .top, spacing: Theme.Spacing.s) {
+            Text(">").font(Theme.Font.data).foregroundStyle(Theme.Color.textPrimary)
+            Text(text).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
         }
+        .padding(Theme.Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.Color.accentStrong.opacity(0.12))
+        .overlay(alignment: .leading) { Rectangle().fill(Theme.Color.accent).frame(width: 3) }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -173,12 +171,7 @@ struct MacroChips: View {
     }
 
     private func chip(_ label: String, _ grams: Double) -> some View {
-        Text("\(label) \(Int(grams.rounded())) g")
-            .font(Theme.Font.micro)
-            .foregroundStyle(Theme.Color.carbon)
-            .padding(.horizontal, Theme.Spacing.s)
-            .padding(.vertical, Theme.Spacing.xs)
-            .inset()
+        Tag(text: "\(label) \(Int(grams.rounded())) g")
     }
 }
 
@@ -193,32 +186,32 @@ struct AdjustPanel: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
             HStack {
                 Button { viewModel.setManualKcal(meal.kcal - 50) } label: { Image(systemName: "minus") }
-                    .buttonStyle(.dark).accessibilityLabel(Text("Minus 50 kcal"))
+                    .buttonStyle(.minimal).accessibilityLabel(Text("Minus 50 kcal"))
                 TextField("kcal", text: $typed)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
                     .font(Theme.Font.link)
                     .padding(Theme.Spacing.s)
-                    .inset(Theme.Color.surface)
+                    .tile(Theme.Color.surfaceRaised)
                     .onSubmit(commitTyped)
                 Button { viewModel.setManualKcal(meal.kcal + 50) } label: { Image(systemName: "plus") }
-                    .buttonStyle(.dark).accessibilityLabel(Text("Plus 50 kcal"))
-                Button("Set", action: commitTyped).buttonStyle(.commit)
+                    .buttonStyle(.minimal).accessibilityLabel(Text("Plus 50 kcal"))
+                Button("Set", action: commitTyped).buttonStyle(.primary)
             }
             HStack {
                 ForEach(Self.portions, id: \.1) { label, value in
                     Button(label) { viewModel.setPortion(value) }
-                        .buttonStyle(meal.kcalSource == .portion && meal.portionMultiplier == value ? .commit : .primary)
+                        .buttonStyle(meal.kcalSource == .portion && meal.portionMultiplier == value ? .primary : .secondary)
                 }
             }
             if meal.kcalSource != .model {
                 Button("Reset to estimate (\(meal.kcalEstimated))") { viewModel.resetToEstimate() }
                     .font(Theme.Font.micro)
-                    .foregroundStyle(Theme.Color.carbon)
+                    .foregroundStyle(Theme.Color.textPrimary)
             }
         }
         .padding(Theme.Spacing.m)
-        .inset(Theme.Color.canvasSoft)
+        .panel(padding: Theme.Spacing.m)
         .onAppear { typed = "\(meal.kcal)" }
         .onChange(of: meal.kcal) { typed = "\(meal.kcal)" }
     }
@@ -236,10 +229,10 @@ struct NotePanel: View {
             TextField("e.g. cooked in 2 tbsp oil", text: $viewModel.note, axis: .vertical)
                 .font(Theme.Font.body)
                 .padding(Theme.Spacing.s)
-                .inset(Theme.Color.surface)
+                .tile(Theme.Color.surfaceRaised)
                 .accessibilityIdentifier("noteField")
             Button("Re-estimate") { viewModel.reEstimate() }
-                .buttonStyle(.commit)
+                .buttonStyle(.primary)
                 .disabled(viewModel.note.trimmingCharacters(in: .whitespaces).isEmpty)
         }
     }

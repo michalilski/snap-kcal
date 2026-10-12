@@ -91,7 +91,7 @@ final class MealAnalyzer {
             targetKcal: NutritionCalculator.target(for: profile),
             eatenTodayKcal: eaten,
             localTime: time,
-            languageName: Prompt.deviceLanguageName,
+            languageName: Prompt.appLanguageName,
             userNote: note,
             detail: settings.analysisDetail
         )

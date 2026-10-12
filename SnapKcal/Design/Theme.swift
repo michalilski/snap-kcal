@@ -2,31 +2,30 @@ import SwiftUI
 
 enum Theme {
     enum Color {
-        static let canvas = SwiftUI.Color(hex: 0x7A8ABA)
-        static let periwinkle = SwiftUI.Color(hex: 0x8BA1D4)
-        static let canvasSoft = SwiftUI.Color(hex: 0x9FBEE7)
-        static let ice = SwiftUI.Color(hex: 0xC0D5E6)
-        static let lavender = SwiftUI.Color(hex: 0xACACE7)
-        static let chromeIndigo = SwiftUI.Color(hex: 0x3D4F97)
-        static let mutedIndigo = SwiftUI.Color(hex: 0x60619C)
-        static let hairline = SwiftUI.Color(hex: 0x5A5F8C)
-        static let platinum = SwiftUI.Color(hex: 0xDEDEDE)
-        static let surface = SwiftUI.Color(hex: 0xFFFFFF)
-        static let carbon = SwiftUI.Color(hex: 0x21242E)
-        static let navGold = SwiftUI.Color(hex: 0xE48600)
-        static let amber = SwiftUI.Color(hex: 0xECAB37)
-        static let signal = SwiftUI.Color(hex: 0xF68D1F)
-        static let red = SwiftUI.Color(hex: 0xE60012)
+        static let background = SwiftUI.Color(hex: 0x000000)
+        static let surface = SwiftUI.Color(hex: 0x0A0A0A)
+        static let surfaceRaised = SwiftUI.Color(hex: 0x161616)
+        static let border = SwiftUI.Color(hex: 0x2E2E2E)
+        static let textPrimary = SwiftUI.Color(hex: 0xF2F2F2)
+        static let textSecondary = SwiftUI.Color(hex: 0x9A9A9A)
+        static let textMuted = SwiftUI.Color(hex: 0x5C5C5C)
+        static let accent = SwiftUI.Color(hex: 0xFFFFFF)
+        static let accentStrong = SwiftUI.Color(hex: 0xFFFFFF)
+        static let success = SwiftUI.Color(hex: 0xF2F2F2)
+        static let warning = SwiftUI.Color(hex: 0x9A9A9A)
+        static let danger = SwiftUI.Color(hex: 0xFF3B30)
     }
 
     enum Font {
-        static let display = SwiftUI.Font.system(size: 56, weight: .black).italic()
-        static let title = SwiftUI.Font.custom("Arial-BoldItalicMT", size: 20, relativeTo: .title3)
-        static let navLink = SwiftUI.Font.custom("Arial-BoldMT", size: 13, relativeTo: .caption)
-        static let uiLabel = SwiftUI.Font.custom("Arial-BoldMT", size: 13, relativeTo: .caption)
-        static let link = SwiftUI.Font.custom("Arial-BoldMT", size: 15, relativeTo: .body)
-        static let body = SwiftUI.Font.custom("ArialMT", size: 15, relativeTo: .body)
-        static let micro = SwiftUI.Font.custom("ArialMT", size: 11, relativeTo: .caption2)
+        static let display = SwiftUI.Font.system(size: 48, weight: .light, design: .monospaced)
+        static let metric = SwiftUI.Font.system(size: 18, weight: .regular, design: .monospaced)
+        static let title = SwiftUI.Font.system(.title3, design: .monospaced, weight: .semibold)
+        static let navLink = SwiftUI.Font.system(size: 10, weight: .medium, design: .monospaced)
+        static let uiLabel = SwiftUI.Font.system(size: 10, weight: .medium, design: .monospaced)
+        static let link = SwiftUI.Font.system(.subheadline, design: .monospaced, weight: .medium)
+        static let body = SwiftUI.Font.system(.footnote, design: .monospaced)
+        static let micro = SwiftUI.Font.system(.caption2, design: .monospaced)
+        static let data = SwiftUI.Font.system(.caption2, design: .monospaced)
     }
 
     enum Spacing {
@@ -41,9 +40,9 @@ enum Theme {
     }
 
     enum Radius {
-        static let plate: CGFloat = 0
-        static let button: CGFloat = 2
-        static let row: CGFloat = 4
+        static let panel: CGFloat = 0
+        static let button: CGFloat = 0
+        static let tile: CGFloat = 0
     }
 }
 
@@ -57,8 +56,19 @@ extension Color {
     }
 }
 
+extension DayStatus {
+    var color: Color {
+        switch self {
+        case .empty, .future: Theme.Color.surfaceRaised
+        case .under: Theme.Color.textMuted
+        case .onTarget: Theme.Color.textPrimary
+        case .over: Theme.Color.danger
+        }
+    }
+}
+
 extension View {
-    func uiLabelStyle(_ color: Color = Theme.Color.carbon) -> some View {
-        font(Theme.Font.uiLabel).tracking(0.5).textCase(.uppercase).foregroundStyle(color)
+    func uiLabelStyle(_ color: Color = Theme.Color.textSecondary) -> some View {
+        font(Theme.Font.uiLabel).tracking(1.5).textCase(.uppercase).foregroundStyle(color)
     }
 }

@@ -10,10 +10,10 @@ struct StatsView: View {
             if let viewModel {
                 StatsContent(viewModel: viewModel)
             } else {
-                Theme.Color.canvas
+                Theme.Color.background
             }
         }
-        .background(Theme.Color.canvas)
+        .background(Theme.Color.background)
         .navigationDestination(for: DayRoute.self) { route in
             DayLogView(mode: .day(DayKey.startOfDay(route.dayKey)))
         }
@@ -58,15 +58,15 @@ private struct StatsContent: View {
                 .disabled(!viewModel.canStepForward)
                 .accessibilityLabel(Text("Next period"))
         }
-        .foregroundStyle(Theme.Color.carbon)
-        .plate()
+        .foregroundStyle(Theme.Color.textPrimary)
+        .panel()
     }
 
     private var periodTitle: String {
         guard let interval = viewModel.interval else { return "" }
-        if viewModel.period == .month { return interval.start.formatted(.dateTime.month(.wide).year()) }
+        if viewModel.period == .month { return interval.start.appFormatted(.dateTime.month(.wide).year()) }
         let end = interval.end.addingTimeInterval(-1)
-        return "\(interval.start.formatted(.dateTime.day().month(.abbreviated))) – \(end.formatted(.dateTime.day().month(.abbreviated)))"
+        return "\(interval.start.appFormatted(.dateTime.day().month(.abbreviated))) – \(end.appFormatted(.dateTime.day().month(.abbreviated)))"
     }
 
     @ViewBuilder
@@ -74,13 +74,13 @@ private struct StatsContent: View {
         if let summary = viewModel.summary {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 HStack(alignment: .lastTextBaseline) {
-                    OutlinedText(text: summary.average.formatted())
+                    MetricText(text: summary.average.formatted())
                     Text("avg kcal / day").uiLabelStyle()
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("statsAverage")
                 Text(summary.vsTarget >= 0 ? "+\(summary.vsTarget.formatted()) over target" : "\(summary.vsTarget.formatted()) under target")
-                    .uiLabelStyle(summary.vsTarget > 0 ? Theme.Color.red : Theme.Color.carbon)
+                    .uiLabelStyle(summary.vsTarget > 0 ? Theme.Color.danger : Theme.Color.success)
                 HStack(spacing: Theme.Spacing.s) {
                     dayStat("Max", summary.max)
                     dayStat("Min", summary.min)
@@ -90,12 +90,12 @@ private struct StatsContent: View {
                     stat("On target", "\(summary.onTargetDays)")
                 }
             }
-            .plate()
+            .panel()
         } else {
             Text("No completed days logged in this period yet.")
                 .font(Theme.Font.body)
-                .foregroundStyle(Theme.Color.carbon)
-                .plate(Theme.Color.lavender)
+                .foregroundStyle(Theme.Color.textPrimary)
+                .panel()
         }
     }
 
@@ -103,13 +103,13 @@ private struct StatsContent: View {
         NavigationLink(value: DayRoute(dayKey: day.dayKey)) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).uiLabelStyle()
-                Text(day.kcal.formatted()).font(.system(size: 20, weight: .black).italic())
-                Text(DayKey.startOfDay(day.dayKey).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))).font(Theme.Font.micro)
+                Text(day.kcal.formatted()).font(Theme.Font.metric)
+                Text(DayKey.startOfDay(day.dayKey).appFormatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))).font(Theme.Font.micro)
             }
-            .foregroundStyle(Theme.Color.carbon)
+            .foregroundStyle(Theme.Color.textPrimary)
             .padding(Theme.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .inset()
+            .tile()
         }
         .buttonStyle(.plain)
     }
@@ -117,12 +117,12 @@ private struct StatsContent: View {
     private func stat(_ title: LocalizedStringKey, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).uiLabelStyle()
-            Text(value).font(.system(size: 20, weight: .black).italic())
+            Text(value).font(Theme.Font.metric)
         }
-        .foregroundStyle(Theme.Color.carbon)
+        .foregroundStyle(Theme.Color.textPrimary)
         .padding(Theme.Spacing.s)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .inset()
+        .tile()
     }
 
     private var chart: some View {
@@ -133,11 +133,11 @@ private struct StatsContent: View {
                     x: .value("Day", bar.date, unit: .day),
                     y: .value("kcal", bar.kcal.map(Double.init) ?? stub)
                 )
-                .foregroundStyle(color(bar))
+                .foregroundStyle(bar.status.color)
             }
             RuleMark(y: .value("Target", viewModel.target))
                 .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                .foregroundStyle(Theme.Color.carbon)
+                .foregroundStyle(Theme.Color.textPrimary)
         }
         .chartXAxis {
             AxisMarks(values: .stride(by: .day, count: viewModel.period == .week ? 1 : 7)) { _ in
@@ -146,16 +146,7 @@ private struct StatsContent: View {
         }
         .frame(height: 220)
         .padding(Theme.Spacing.m)
-        .background(Theme.Color.surface)
-        .overlay(Rectangle().stroke(Theme.Color.chromeIndigo, lineWidth: 1))
+        .panel(padding: Theme.Spacing.m)
     }
 
-    private func color(_ bar: DayBar) -> Color {
-        switch bar.status {
-        case .empty, .future: Theme.Color.platinum
-        case .under: Theme.Color.canvasSoft
-        case .onTarget: Theme.Color.amber
-        case .over: Theme.Color.red
-        }
-    }
 }

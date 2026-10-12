@@ -11,10 +11,10 @@ struct MealDetailView: View {
             if let viewModel, let meal = viewModel.meal, !meal.isDeleted {
                 MealDetailContent(meal: meal, viewModel: viewModel)
             } else {
-                Theme.Color.canvas
+                Theme.Color.background
             }
         }
-        .background(Theme.Color.canvas)
+        .background(Theme.Color.background)
         .task {
             if viewModel == nil { viewModel = MealDetailViewModel(mealID: mealID, environment: environment) }
         }
@@ -46,8 +46,8 @@ private struct MealDetailContent: View {
                     if !meal.tip.isEmpty { TipBox(text: meal.tip) }
                     MacroChips(meal: meal)
                 }
-                .foregroundStyle(Theme.Color.carbon)
-                .plate()
+                .foregroundStyle(Theme.Color.textPrimary)
+                .panel()
                 editSection
                 itemsSection
                 provenanceSection
@@ -55,7 +55,7 @@ private struct MealDetailContent: View {
                     viewModel.delete()
                     dismiss()
                 }
-                .buttonStyle(.destructive)
+                .buttonStyle(.danger)
             }
             .padding(Theme.Spacing.l)
         }
@@ -76,7 +76,8 @@ private struct MealDetailContent: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity)
-                .overlay(Rectangle().stroke(Theme.Color.carbon, lineWidth: 2))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.panel))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(Theme.Color.border, lineWidth: 1))
                 .accessibilityHidden(true)
         }
     }
@@ -87,25 +88,25 @@ private struct MealDetailContent: View {
             TextField("Name", text: $name)
                 .font(Theme.Font.link)
                 .padding(Theme.Spacing.s)
-                .inset(Theme.Color.surface)
+                .tile(Theme.Color.surfaceRaised)
                 .onSubmit { viewModel.rename(name) }
             HStack {
                 TextField("kcal", text: $kcalText)
                     .keyboardType(.numberPad)
                     .font(Theme.Font.link)
                     .padding(Theme.Spacing.s)
-                    .inset(Theme.Color.surface)
+                    .tile(Theme.Color.surfaceRaised)
                 Button("Save") {
                     viewModel.rename(name)
                     if let value = Int(kcalText) { viewModel.setKcal(value) }
                 }
-                .buttonStyle(.commit)
+                .buttonStyle(.primary)
                 if meal.kcalSource != .model {
                     Button("Reset") {
                         viewModel.resetToEstimate()
                         kcalText = "\(meal.kcal)"
                     }
-                    .buttonStyle(.primary)
+                    .buttonStyle(.secondary)
                 }
             }
             DatePicker("Eaten at", selection: $eatenAt, in: ...Date.now)
@@ -113,7 +114,7 @@ private struct MealDetailContent: View {
                 .onChange(of: eatenAt) { _, date in viewModel.move(to: date) }
                 .accessibilityIdentifier("eatenAtPicker")
         }
-        .plate()
+        .panel()
     }
 
     @ViewBuilder
@@ -131,21 +132,21 @@ private struct MealDetailContent: View {
                         Text("\(item.kcal) kcal").font(Theme.Font.link)
                     }
                     .padding(Theme.Spacing.s)
-                    .inset()
+                    .tile()
                 }
             }
-            .foregroundStyle(Theme.Color.carbon)
-            .plate()
+            .foregroundStyle(Theme.Color.textPrimary)
+            .panel()
         }
     }
 
     private var provenanceSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
             PanelTitle("Analysis")
-            Text("\(meal.provider.displayName) · \(meal.modelId)").font(Theme.Font.micro)
+            Text("\(meal.provider.displayName) · \(meal.modelId)").font(Theme.Font.data)
             if let note = meal.userNote { Text("Note: \(note)").font(Theme.Font.micro) }
             if let input = meal.inputTokens, let output = meal.outputTokens {
-                Text("Tokens: \(input) in / \(output) out").font(Theme.Font.micro)
+                Text("Tokens: \(input) in / \(output) out").font(Theme.Font.data)
             }
             if viewModel.isReanalyzing {
                 LoadingLabel(text: "Reading your plate…")
@@ -159,10 +160,10 @@ private struct MealDetailContent: View {
                 } label: {
                     Text("Re-analyze with…")
                 }
-                .buttonStyle(.primary)
+                .buttonStyle(.secondary)
             }
         }
-        .foregroundStyle(Theme.Color.carbon)
-        .plate()
+        .foregroundStyle(Theme.Color.textPrimary)
+        .panel()
     }
 }

@@ -27,7 +27,7 @@ struct AISetupSection: View {
                 Text("\(provider.displayName) API key").font(Theme.Font.link)
                 Spacer()
                 if let masked = viewModel.keys[provider] ?? nil {
-                    Text(masked).font(Theme.Font.micro).accessibilityIdentifier("maskedKey")
+                    Text(masked).font(Theme.Font.data).accessibilityIdentifier("maskedKey")
                 }
             }
             HStack(spacing: Theme.Spacing.s) {
@@ -37,24 +37,24 @@ struct AISetupSection: View {
                     .font(Theme.Font.body)
                     .padding(Theme.Spacing.s)
                     .frame(minHeight: 44)
-                    .inset(Theme.Color.surface)
+                    .tile(Theme.Color.surfaceRaised)
                     .accessibilityIdentifier("apiKeyField")
                 Button("Paste") {
                     keyInput = UIPasteboard.general.string ?? ""
                 }
-                .buttonStyle(.primary)
+                .buttonStyle(.secondary)
                 Button("Save") {
                     viewModel.setKey(keyInput, for: provider)
                     keyInput = ""
                 }
-                .buttonStyle(.commit)
+                .buttonStyle(.primary)
                 .disabled(keyInput.trimmingCharacters(in: .whitespaces).isEmpty)
                 .accessibilityIdentifier("saveKey")
             }
             if viewModel.hasKey(provider) && !viewModel.isMock {
                 Button("Remove key") { viewModel.setKey("", for: provider) }
                     .font(Theme.Font.micro)
-                    .foregroundStyle(Theme.Color.red)
+                    .foregroundStyle(Theme.Color.danger)
             }
         }
     }
@@ -75,10 +75,10 @@ struct AISetupSection: View {
                 }
                 ChevronChip()
             }
-            .foregroundStyle(Theme.Color.carbon)
+            .foregroundStyle(Theme.Color.textPrimary)
             .padding(Theme.Spacing.m)
             .frame(minHeight: 44)
-            .inset()
+            .tile()
         }
         .accessibilityIdentifier("modelRow")
     }
@@ -86,7 +86,7 @@ struct AISetupSection: View {
     private var testRow: some View {
         HStack(spacing: Theme.Spacing.m) {
             Button("Test") { Task { await viewModel.testActiveModel() } }
-                .buttonStyle(.primary)
+                .buttonStyle(.secondary)
                 .disabled(viewModel.testState == .running)
                 .accessibilityIdentifier("testModel")
             switch viewModel.testState {
@@ -95,7 +95,7 @@ struct AISetupSection: View {
             case .ok(let latency):
                 Text("OK · \(latency.formatted(.number.precision(.fractionLength(1)))) s").uiLabelStyle()
             case .failed(let message):
-                Text(message).font(Theme.Font.micro).foregroundStyle(Theme.Color.red)
+                Text(message).font(Theme.Font.micro).foregroundStyle(Theme.Color.danger)
             }
         }
     }
@@ -110,7 +110,7 @@ struct ModelPickerView: View {
     var body: some View {
         List {
             if let error = viewModel.loadError[provider] {
-                Text(error).font(Theme.Font.micro).foregroundStyle(Theme.Color.red)
+                Text(error).font(Theme.Font.micro).foregroundStyle(Theme.Color.danger)
             }
             Section("Enter model ID manually") {
                 HStack {
@@ -135,7 +135,7 @@ struct ModelPickerView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.Color.canvas)
+        .background(Theme.Color.background)
         .navigationTitle(provider.displayName)
         .refreshable { await viewModel.refreshModels(provider, force: true) }
         .task {
@@ -147,15 +147,15 @@ struct ModelPickerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.displayName).font(Theme.Font.link)
-                if model.displayName != model.id { Text(model.id).font(Theme.Font.micro) }
+                if model.displayName != model.id { Text(model.id).font(Theme.Font.data) }
             }
             if model.isFastHint {
-                Text("Fast").font(Theme.Font.micro).padding(.horizontal, 4).background(Theme.Color.amber)
+                Tag(text: String(localized: "Fast"), color: Theme.Color.success)
             }
             Spacer()
             if viewModel.settings.testedModels.contains(model.id) { Image(systemName: "checkmark.seal") }
             if viewModel.settings.modelId(for: provider) == model.id { Image(systemName: "checkmark") }
         }
-        .foregroundStyle(Theme.Color.carbon)
+        .foregroundStyle(Theme.Color.textPrimary)
     }
 }

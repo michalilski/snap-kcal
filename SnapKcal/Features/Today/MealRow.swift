@@ -7,17 +7,21 @@ struct MealRow: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.m) {
             thumbnail
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(Theme.Font.link).lineLimit(1)
-                Text(meal.eatenAt.formatted(date: .omitted, time: .shortened)).font(Theme.Font.micro)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(Theme.Font.link)
+                    .foregroundStyle(meal.status == .failed ? Theme.Color.danger : Theme.Color.textPrimary)
+                    .lineLimit(1)
+                Text(meal.eatenAt.appFormatted(.dateTime.hour().minute()))
+                    .font(Theme.Font.data)
+                    .foregroundStyle(Theme.Color.textMuted)
             }
-            .foregroundStyle(Theme.Color.carbon)
             Spacer(minLength: Theme.Spacing.s)
             trailing
         }
         .padding(Theme.Spacing.s)
-        .frame(minHeight: 72)
-        .inset()
+        .frame(minHeight: 64)
+        .tile(Theme.Color.surface)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("mealRow")
     }
@@ -30,18 +34,16 @@ struct MealRow: View {
         }
     }
 
-    @ViewBuilder
     private var thumbnail: some View {
         Group {
             if let data = meal.thumbnail, let image = UIImage(data: data) {
                 Image(uiImage: image).resizable().scaledToFill()
             } else {
-                Theme.Color.lavender
+                Theme.Color.surfaceRaised
             }
         }
-        .frame(width: 56, height: 56)
-        .clipped()
-        .overlay(Rectangle().stroke(Theme.Color.carbon, lineWidth: 1))
+        .frame(width: 48, height: 48)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile))
         .accessibilityHidden(true)
     }
 
@@ -49,17 +51,17 @@ struct MealRow: View {
     private var trailing: some View {
         switch meal.status {
         case .analyzing:
-            BlinkingDots()
+            PulseIndicator()
         case .failed:
             Button("Retry", action: onRetry)
-                .buttonStyle(.commit)
+                .buttonStyle(.secondary)
                 .accessibilityIdentifier("rowRetry")
         case .done:
-            HStack(spacing: Theme.Spacing.s) {
+            HStack(spacing: Theme.Spacing.m) {
                 ScoreBadge(score: meal.healthScore)
                 Text(meal.kcal.formatted())
-                    .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Theme.Color.carbon)
+                    .font(Theme.Font.metric)
+                    .foregroundStyle(Theme.Color.textPrimary)
                     .accessibilityLabel(Text("\(meal.kcal) kilocalories"))
                 ChevronChip()
             }
@@ -73,16 +75,18 @@ struct UndoToast: View {
 
     var body: some View {
         HStack {
-            Text("Deleted \(name)").font(Theme.Font.body).foregroundStyle(.white).lineLimit(1)
+            Text("Deleted \(name)").font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary).lineLimit(1)
             Spacer()
-            Button("Undo", action: onUndo).buttonStyle(.primary).accessibilityIdentifier("undoButton")
+            Button("Undo", action: onUndo).buttonStyle(.minimal).accessibilityIdentifier("undoButton")
         }
-        .padding(Theme.Spacing.m)
-        .background(Theme.Color.carbon)
+        .padding(.horizontal, Theme.Spacing.m)
+        .padding(.vertical, Theme.Spacing.xs)
+        .tile()
+        .padding(.horizontal, Theme.Spacing.l)
     }
 }
 
-struct KcalPlate: View {
+struct KcalSummary: View {
     let eaten: Int
     let target: Int
 
@@ -90,24 +94,28 @@ struct KcalPlate: View {
     private var isOver: Bool { eaten > target }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            HStack(alignment: .lastTextBaseline, spacing: Theme.Spacing.s) {
-                OutlinedText(text: eaten.formatted())
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.s) {
+                MetricText(text: eaten.formatted())
                     .accessibilityLabel(Text("\(eaten) kilocalories eaten"))
                     .accessibilityIdentifier("dayTotal")
-                Text("/ \(target.formatted())").uiLabelStyle()
-            }
-            Text(isOver ? "\((eaten - target).formatted()) kcal over" : "\((target - eaten).formatted()) kcal left")
-                .uiLabelStyle(isOver ? Theme.Color.red : Theme.Color.carbon)
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Theme.Color.carbon
-                    (isOver ? Theme.Color.red : Theme.Color.amber).frame(width: proxy.size.width * progress)
+                Text("/ \(target.formatted()) kcal")
+                    .font(Theme.Font.data)
+                    .foregroundStyle(Theme.Color.textMuted)
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(isOver ? "Over" : "Remaining").uiLabelStyle()
+                    Text(abs(target - eaten).formatted())
+                        .font(Theme.Font.metric)
+                        .foregroundStyle(isOver ? Theme.Color.danger : Theme.Color.textPrimary)
                 }
             }
-            .frame(height: 10)
-            .overlay(alignment: .top) { Rectangle().fill(Theme.Color.chromeIndigo).frame(height: 1) }
-            .accessibilityHidden(true)
+            HStack(spacing: Theme.Spacing.s) {
+                SegmentBar(progress: progress, color: isOver ? Theme.Color.danger : Theme.Color.textPrimary)
+                Text(String(format: "%3d%%", Int((Double(eaten) / Double(max(target, 1)) * 100).rounded())))
+                    .font(Theme.Font.data)
+                    .foregroundStyle(isOver ? Theme.Color.danger : Theme.Color.textSecondary)
+            }
         }
     }
 }

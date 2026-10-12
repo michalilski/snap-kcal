@@ -13,7 +13,7 @@ struct OnboardingFlow: View {
                         .toolbar(.hidden, for: .navigationBar)
                 }
             } else {
-                Theme.Color.ice
+                Theme.Color.background
             }
         }
         .task {
@@ -41,17 +41,23 @@ private struct OnboardingContent: View {
             .scrollDismissesKeyboard(.interactively)
             footer
         }
-        .background(Theme.Color.ice.ignoresSafeArea())
+        .background(Theme.Color.background.ignoresSafeArea())
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            Text("Snap Kcal").font(Theme.Font.title).foregroundStyle(.white)
-            Text("Step \(viewModel.step + 1) of \(OnboardingViewModel.stepCount)").uiLabelStyle(Theme.Color.navGold)
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            Text("Snap Kcal").font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
+            Text("Step \(viewModel.step + 1) of \(OnboardingViewModel.stepCount)").uiLabelStyle()
+            HStack(spacing: Theme.Spacing.xs) {
+                ForEach(0..<OnboardingViewModel.stepCount, id: \.self) { index in
+                    Capsule()
+                        .fill(index <= viewModel.step ? Theme.Color.accent : Theme.Color.surfaceRaised)
+                        .frame(height: 3)
+                }
+            }
         }
         .padding(Theme.Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CommandSlab().ignoresSafeArea(edges: .top))
     }
 
     @ViewBuilder
@@ -62,26 +68,26 @@ private struct OnboardingContent: View {
                 PanelTitle("Body")
                 BodyForm(draft: $viewModel.draft)
             }
-            .plate()
+            .panel()
         case 1:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 PanelTitle("Activity")
                 ActivityPicker(level: $viewModel.draft.activityLevel)
             }
-            .plate()
+            .panel()
         case 2:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 PanelTitle("Daily goal")
                 GoalPicker(goal: $viewModel.draft.goal, targets: viewModel.targets)
             }
-            .plate()
+            .panel()
         default:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 PanelTitle("AI setup")
                 AISetupSection(viewModel: settingsViewModel)
                 Text("You can skip this and add a key later in SETUP.").font(Theme.Font.micro)
             }
-            .plate()
+            .panel()
         }
     }
 
@@ -89,16 +95,16 @@ private struct OnboardingContent: View {
         HStack {
             if viewModel.step > 0 {
                 Button("Back") { viewModel.back() }
-                    .buttonStyle(.dark)
+                    .buttonStyle(.minimal)
                     .accessibilityIdentifier("onboardingBack")
             }
             Spacer()
             Button(viewModel.isLastStep ? "Start" : "Next") { viewModel.next() }
-                .buttonStyle(.commit)
+                .buttonStyle(.primary)
                 .disabled(!viewModel.canContinue)
                 .accessibilityIdentifier("onboardingNext")
         }
         .padding(Theme.Spacing.l)
-        .background(Theme.Color.periwinkle)
+        .background(BarBackground().ignoresSafeArea(edges: .bottom))
     }
 }

@@ -14,17 +14,10 @@ enum AppTab: String, CaseIterable, Identifiable {
         }
     }
 
-    var icon: String {
-        switch self {
-        case .today: "fork.knife"
-        case .calendar: "calendar"
-        case .stats: "chart.bar.fill"
-        case .setup: "gearshape.fill"
-        }
-    }
+    var index: Int { (Self.allCases.firstIndex(of: self) ?? 0) + 1 }
 }
 
-struct CommandBar: View {
+struct TabBar: View {
     @Binding var selection: AppTab
 
     var body: some View {
@@ -36,19 +29,25 @@ struct CommandBar: View {
                     .accessibilityAddTraits(selection == tab ? .isSelected : [])
             }
         }
-        .padding(.top, Theme.Spacing.s)
-        .background(CommandSlab().ignoresSafeArea(edges: .bottom))
+        .background(BarBackground().ignoresSafeArea(edges: .bottom))
     }
 
     private func item(_ tab: AppTab) -> some View {
         let isSelected = selection == tab
         return VStack(spacing: Theme.Spacing.xs) {
-            Image(systemName: tab.icon).font(.system(size: 16, weight: .bold))
-            Text(tab.title).font(Theme.Font.navLink).tracking(0.5).textCase(.uppercase)
-            Rectangle().fill(isSelected ? Theme.Color.amber : .clear).frame(width: 36, height: 3)
+            Rectangle().fill(isSelected ? Theme.Color.textPrimary : .clear).frame(height: 2)
+            Text(String(format: "%02d", tab.index)).font(Theme.Font.data).foregroundStyle(Theme.Color.textMuted)
+            HStack(spacing: 2) {
+                if isSelected { Text("[") }
+                Text(tab.title).textCase(.uppercase)
+                if isSelected { Text("]") }
+            }
+            .font(Theme.Font.navLink)
+            .tracking(1)
         }
-        .foregroundStyle(isSelected ? Color.white : Theme.Color.navGold)
-        .frame(maxWidth: .infinity, minHeight: 48)
+        .padding(.bottom, Theme.Spacing.s)
+        .foregroundStyle(isSelected ? Theme.Color.textPrimary : Theme.Color.textMuted)
+        .frame(maxWidth: .infinity, minHeight: 52)
         .contentShape(Rectangle())
     }
 }

@@ -2,6 +2,22 @@
 
 Progress against `docs/build-plan.md`. Newest entries first.
 
+## 2026-10-12 — Redesign: monochrome tactical UI, English-only
+
+### What changed
+
+- **Design:** replaced the Nintendo 2001 look (the build plan's "Design system" section is superseded) with a black/white/grey technical UI in the style of Palantir:
+  - Typography: monospace everywhere, square corners, HUD corner brackets on panels, `// SECTION` titles.
+  - Controls: `[ BRACKETED ]` buttons, numbered tab bar, segmented ASCII-style progress bar, `[■□□□]` loader.
+  - Colour: red is the only colour, used just for "over target" and errors.
+  - Tokens and components are semantic now (`background`, `surface`, `border`, `textPrimary`, `accent`, `danger`; `panel()`, `tile()`, `MetricText`, `TabBar`, `SegmentBar`).
+  - App icon regenerated in monochrome.
+- **Language:** English only. Polish strings were removed so the UI and the AI output never mix languages. `AppLocale` pins English while keeping the user's region (Monday week start, 24h clock), and the AI prompt asks for answers in the app's language (English).
+
+### What's next
+
+Same as below (real-key Test call, real fixtures, device pass).
+
 ## 2026-10-12 — v1 build: Milestones 1–6
 
 ### Status
@@ -13,7 +29,7 @@ Progress against `docs/build-plan.md`. Newest entries first.
 | 3. AI layer | ✅ Done in code + tests; ⏳ real-key Test call not run yet (no keys in `.env`) |
 | 4. Capture loop | ✅ Done (verified in simulator with `-mockAI`) |
 | 5. Calendar + day view + meal detail | ✅ Done |
-| 6. Stats + export + polish | ✅ Done (en + pl, haptics, a11y labels, UI smoke test) |
+| 6. Stats + export + polish | ✅ Done (haptics, a11y labels, UI smoke test; English-only, see redesign entry above) |
 
 **Tests:** 76 unit tests (Swift Testing) + 2 UI tests (XCUITest), all passing on the iPhone 17 simulator (iOS 26).
 
@@ -55,7 +71,7 @@ Progress against `docs/build-plan.md`. Newest entries first.
 2. Turn on "Save last raw response", analyse a few real meals, and replace `SnapKcalTests/Fixtures/*_response.json` with real captures.
 3. Manual device pass from the testing checklist: 10 real meals across two models; edge cases: wrong key, deleted model id, airplane mode, backgrounding during analysis, non-food photo, dark photo, 23:59 meal.
 4. Run on a physical iPhone: set `DEVELOPMENT_TEAM` in `project.yml` and regenerate.
-5. VoiceOver pass through the capture loop, plus a fuller pl translation review.
+5. VoiceOver pass through the capture loop.
 6. Later (v2 per plan): Apple Health, widget, Lock Screen control, weight trend chart.
 
 ### How to run

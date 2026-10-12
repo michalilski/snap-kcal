@@ -13,10 +13,10 @@ struct CalendarView: View {
             if let viewModel {
                 CalendarContent(viewModel: viewModel)
             } else {
-                Theme.Color.canvas
+                Theme.Color.background
             }
         }
-        .background(Theme.Color.canvas)
+        .background(Theme.Color.background)
         .navigationDestination(for: DayRoute.self) { route in
             DayLogView(mode: .day(DayKey.startOfDay(route.dayKey)))
         }
@@ -62,27 +62,27 @@ private struct CalendarContent: View {
                 .frame(width: 44, height: 44)
                 .accessibilityLabel(Text("Previous month"))
             Spacer()
-            Text(viewModel.month.formatted(.dateTime.month(.wide).year())).uiLabelStyle()
+            Text(viewModel.month.appFormatted(.dateTime.month(.wide).year())).uiLabelStyle()
             Spacer()
             if !viewModel.isCurrentMonth {
-                Button("Today") { viewModel.jumpToToday() }.buttonStyle(.primary)
+                Button("Today") { viewModel.jumpToToday() }.buttonStyle(.secondary)
             }
             Button { viewModel.step(months: 1) } label: { Image(systemName: "chevron.right") }
                 .frame(width: 44, height: 44)
                 .accessibilityLabel(Text("Next month"))
         }
-        .foregroundStyle(Theme.Color.carbon)
-        .plate()
+        .foregroundStyle(Theme.Color.textPrimary)
+        .panel()
     }
 
     private var legend: some View {
         HStack(spacing: Theme.Spacing.m) {
-            item(Theme.Color.canvasSoft, "Under")
-            item(Theme.Color.amber, "On target")
-            item(Theme.Color.red, "Over")
+            item(DayStatus.under.color, "Under")
+            item(DayStatus.onTarget.color, "On target")
+            item(DayStatus.over.color, "Over")
         }
         .font(Theme.Font.micro)
-        .foregroundStyle(Theme.Color.carbon)
+        .foregroundStyle(Theme.Color.textPrimary)
     }
 
     private func item(_ color: Color, _ label: LocalizedStringKey) -> some View {
@@ -103,7 +103,7 @@ struct CalendarCellView: View {
                 Spacer(minLength: 0)
                 if let total = cell.totalKcal, total > 0 {
                     Text(total.formatted())
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity)
@@ -111,21 +111,27 @@ struct CalendarCellView: View {
                 Spacer(minLength: 0)
             }
         }
-        .foregroundStyle(cell.status == .over ? Color.white : Theme.Color.carbon)
+        .foregroundStyle(cell.status == .future ? Theme.Color.textMuted : Theme.Color.textPrimary)
         .padding(3)
         .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
-        .background(fill)
+        .background(fill, in: RoundedRectangle(cornerRadius: 2))
+        .overlay(RoundedRectangle(cornerRadius: 2).stroke(stroke, lineWidth: 1))
         .accessibilityElement(children: .combine)
     }
 
     private var fill: Color {
         guard cell.dayNumber != nil else { return .clear }
         switch cell.status {
-        case .empty: return Theme.Color.platinum
-        case .under: return Theme.Color.canvasSoft
-        case .onTarget: return Theme.Color.amber
-        case .over: return Theme.Color.red
-        case .future: return Theme.Color.platinum.opacity(0.5)
+        case .empty, .future: return Theme.Color.surface
+        default: return cell.status.color.opacity(0.28)
+        }
+    }
+
+    private var stroke: Color {
+        guard cell.dayNumber != nil else { return .clear }
+        switch cell.status {
+        case .empty, .future: return Theme.Color.border
+        default: return cell.status.color.opacity(0.7)
         }
     }
 }

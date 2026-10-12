@@ -39,8 +39,8 @@ enum Prompt {
         return lines.joined(separator: "\n")
     }
 
-    static var deviceLanguageName: String {
-        let code = Locale.preferredLanguages.first.map { Locale(identifier: $0).language.languageCode?.identifier ?? "en" } ?? "en"
+    static var appLanguageName: String {
+        let code = Bundle.main.preferredLocalizations.first ?? "en"
         return Locale(identifier: "en").localizedString(forLanguageCode: code) ?? "English"
     }
 }

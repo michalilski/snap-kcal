@@ -14,8 +14,8 @@ struct RootTabView: View {
                 }
             }
             .frame(maxHeight: .infinity)
-            CommandBar(selection: $selection)
+            TabBar(selection: $selection)
         }
-        .background(Theme.Color.canvas.ignoresSafeArea())
+        .background(Theme.Color.background.ignoresSafeArea())
     }
 }

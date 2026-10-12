@@ -22,7 +22,7 @@ struct BodyForm: View {
             if !draft.isValid {
                 Text("Height 120–250 cm, weight 30–300 kg, age 13–100.")
                     .font(Theme.Font.micro)
-                    .foregroundStyle(Theme.Color.red)
+                    .foregroundStyle(Theme.Color.danger)
             }
         }
     }
@@ -44,7 +44,7 @@ struct NumberField: View {
                 .font(Theme.Font.link)
                 .frame(width: 100)
                 .padding(Theme.Spacing.s)
-                .inset(Theme.Color.surface)
+                .tile(Theme.Color.surfaceRaised)
                 .accessibilityIdentifier(identifier)
         }
     }
@@ -65,18 +65,19 @@ struct ActivityPicker: View {
             ForEach(0..<4, id: \.self) { index in
                 Button { level = index } label: {
                     HStack(spacing: Theme.Spacing.m) {
-                        Text("\(index)").font(.system(size: 24, weight: .black).italic())
+                        Text("\(index)").font(Theme.Font.metric).foregroundStyle(Theme.Color.textMuted)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(Self.options[index].title).font(Theme.Font.link)
                             Text(Self.options[index].detail).font(Theme.Font.micro)
                         }
                         Spacer()
-                        Image(systemName: level == index ? "largecircle.fill.circle" : "circle")
+                        Image(systemName: level == index ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(level == index ? Theme.Color.accent : Theme.Color.textMuted)
                     }
-                    .foregroundStyle(Theme.Color.carbon)
+                    .foregroundStyle(Theme.Color.textPrimary)
                     .padding(Theme.Spacing.m)
                     .frame(minHeight: 56)
-                    .inset(level == index ? Theme.Color.amber : Theme.Color.platinum)
+                    .selectableTile(level == index)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("activity-\(index)")
@@ -98,12 +99,12 @@ struct GoalPicker: View {
                         VStack(spacing: Theme.Spacing.xs) {
                             Text(option.title).uiLabelStyle()
                             Text(targets.value(for: option).formatted())
-                                .font(.system(size: 22, weight: .black).italic())
-                                .foregroundStyle(Theme.Color.carbon)
-                            Text("kcal").font(Theme.Font.micro).foregroundStyle(Theme.Color.carbon)
+                                .font(Theme.Font.metric)
+                                .foregroundStyle(Theme.Color.textPrimary)
+                            Text("kcal").font(Theme.Font.micro).foregroundStyle(Theme.Color.textMuted)
                         }
                         .frame(maxWidth: .infinity, minHeight: 84)
-                        .inset(goal == option ? Theme.Color.amber : Theme.Color.platinum)
+                        .selectableTile(goal == option)
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("goal-\(option.rawValue)")
@@ -111,9 +112,9 @@ struct GoalPicker: View {
                 }
             }
             if targets.loseRaisedToFloor {
-                Text("Target raised to a safe minimum").font(Theme.Font.micro).foregroundStyle(Theme.Color.carbon)
+                Text("Target raised to a safe minimum").font(Theme.Font.micro).foregroundStyle(Theme.Color.warning)
             }
-            Text("Estimates only, not medical advice.").font(Theme.Font.micro).foregroundStyle(Theme.Color.carbon)
+            Text("Estimates only, not medical advice.").font(Theme.Font.micro).foregroundStyle(Theme.Color.textMuted)
         }
     }
 }

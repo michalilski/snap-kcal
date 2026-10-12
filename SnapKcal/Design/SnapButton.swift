@@ -5,34 +5,36 @@ struct SnapButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "camera.fill")
-                .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 84, height: 84)
+            VStack(spacing: 2) {
+                Image(systemName: "camera").font(.system(size: 22, weight: .light))
+                Text("SNAP").font(.system(size: 9, weight: .semibold, design: .monospaced)).tracking(2)
+            }
+            .frame(width: 72, height: 72)
         }
-        .buttonStyle(SnapDiscStyle())
+        .buttonStyle(SnapReticleStyle())
         .accessibilityLabel(Text("Snap a meal"))
         .accessibilityIdentifier("snapButton")
     }
 }
 
-private struct SnapDiscStyle: ButtonStyle {
+private struct SnapReticleStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(Circle().fill(Theme.Color.signal))
-            .overlay(Circle().fill(Color.black.opacity(configuration.isPressed ? 0.08 : 0)))
-            .overlay(Circle().stroke(Theme.Color.chromeIndigo, lineWidth: 2))
-            .shadow(color: .black.opacity(0.35), radius: 3, y: 2)
+            .foregroundStyle(configuration.isPressed ? Theme.Color.background : Theme.Color.textPrimary)
+            .background(configuration.isPressed ? Theme.Color.textPrimary : Theme.Color.background)
+            .overlay(Rectangle().stroke(Theme.Color.border, lineWidth: 1))
+            .overlay(CornerBrackets(length: 12, color: Theme.Color.textPrimary))
+            .opacity(isEnabled ? 1 : 0.35)
     }
 }
 
 struct ChevronChip: View {
     var body: some View {
-        Image(systemName: "chevron.right")
-            .font(.system(size: 10, weight: .heavy))
-            .foregroundStyle(Theme.Color.carbon)
-            .frame(width: 20, height: 20)
-            .background(Circle().fill(Theme.Color.signal))
+        Text(">")
+            .font(Theme.Font.data)
+            .foregroundStyle(Theme.Color.textMuted)
             .accessibilityHidden(true)
     }
 }
