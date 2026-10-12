@@ -1,0 +1,18 @@
+{
+ "id": "msg_01",
+ "type": "message",
+ "role": "assistant",
+ "model": "claude-haiku",
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"is_food\":true,\"meal_name\":\"Chicken burrito bowl\",\"description\":\"Rice, chicken, beans and guacamole.\",\"items\":[{\"name\":\"Rice\",\"portion\":\"180 g\",\"kcal\":230},{\"name\":\"Chicken\",\"portion\":\"120 g\",\"kcal\":200},{\"name\":\"Beans\",\"portion\":\"80 g\",\"kcal\":90},{\"name\":\"Guacamole\",\"portion\":\"50 g\",\"kcal\":80}],\"kcal_total\":600,\"kcal_low\":520,\"kcal_high\":680,\"protein_g\":42,\"carbs_g\":68,\"fat_g\":16,\"health_score\":7,\"score_reason\":\"Good protein and fiber.\",\"tip\":\"Add greens.\",\"confidence\":\"medium\"}"
+  }
+ ],
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "usage": {
+  "input_tokens": 1020,
+  "output_tokens": 190
+ }
+}

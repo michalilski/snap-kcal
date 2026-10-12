@@ -19,3 +19,4 @@ xcuserdata/
 # Secrets
 *.xcconfig.local
 .env
+!.env.example

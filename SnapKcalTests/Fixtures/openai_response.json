@@ -1,0 +1,31 @@
+{
+ "id": "resp_123",
+ "object": "response",
+ "status": "completed",
+ "output": [
+  {
+   "type": "reasoning",
+   "id": "rs_1",
+   "summary": []
+  },
+  {
+   "type": "message",
+   "id": "msg_1",
+   "role": "assistant",
+   "status": "completed",
+   "content": [
+    {
+     "type": "output_text",
+     "text": "{\"is_food\":true,\"meal_name\":\"Chicken burrito bowl\",\"description\":\"Rice, chicken, beans and guacamole.\",\"items\":[{\"name\":\"Rice\",\"portion\":\"180 g\",\"kcal\":230},{\"name\":\"Chicken\",\"portion\":\"120 g\",\"kcal\":200},{\"name\":\"Beans\",\"portion\":\"80 g\",\"kcal\":90},{\"name\":\"Guacamole\",\"portion\":\"50 g\",\"kcal\":80}],\"kcal_total\":600,\"kcal_low\":520,\"kcal_high\":680,\"protein_g\":42,\"carbs_g\":68,\"fat_g\":16,\"health_score\":7,\"score_reason\":\"Good protein and fiber.\",\"tip\":\"Add greens.\",\"confidence\":\"medium\"}",
+     "annotations": []
+    }
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 812,
+  "output_tokens": 164,
+  "total_tokens": 976
+ },
+ "incomplete_details": null
+}

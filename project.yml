@@ -1,0 +1,77 @@
+name: SnapKcal
+options:
+  bundleIdPrefix: com.michalilski
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  SnapKcal:
+    type: application
+    platform: iOS
+    sources:
+      - path: SnapKcal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.michalilski.snapkcal
+        PRODUCT_NAME: SnapKcal
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_FILE: SnapKcal/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    postBuildScripts:
+      - name: Embed .env API keys
+        path: Scripts/embed-env.sh
+        basedOnDependencyAnalysis: false
+  SnapKcalTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SnapKcalTests
+    dependencies:
+      - target: SnapKcal
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/SnapKcal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SnapKcal
+        BUNDLE_LOADER: $(TEST_HOST)
+  SnapKcalUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SnapKcalUITests
+    dependencies:
+      - target: SnapKcal
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: SnapKcal
+schemes:
+  SnapKcal:
+    build:
+      targets:
+        SnapKcal: all
+        SnapKcalTests: [test]
+        SnapKcalUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SnapKcalTests
+        - SnapKcalUITests
+  SnapKcal-Mock:
+    build:
+      targets:
+        SnapKcal: all
+    run:
+      config: Debug
+      commandLineArguments:
+        "-mockAI": true
