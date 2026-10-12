@@ -2,7 +2,19 @@
 
 Progress against `docs/build-plan.md`. Newest entries first.
 
-## 2026-10-12 — Redesign: monochrome tactical UI, English-only
+## 2026-10-12 — Redesign: Nike style
+
+### What changed
+
+- Replaced the monochrome tactical UI with a Nike-inspired style:
+  - Layout: white background, soft grey (`#F5F5F5`) rounded cards, no borders.
+  - Type: big heavy condensed uppercase headlines and numbers (SF Pro Black Condensed).
+  - Controls: pill buttons (black primary, outlined secondary), size-picker style selection (black 2pt outline), a thick black progress bar, a round black SNAP button, and an icon tab bar with labels.
+  - Colour: Nike red (`#D30005`) for "over target" and errors, green for good health scores. Calendar and chart status colours: grey (under), black (on target), red (over).
+  - Light appearance locked; app icon regenerated (black with white condensed "KCAL").
+- The chart axes are now formatted with the English app locale. Swift Charts doesn't follow the app-wide locale, so they were still showing Polish.
+
+## 2026-10-12 — Redesign: monochrome tactical UI (superseded), English-only
 
 ### What changed
 

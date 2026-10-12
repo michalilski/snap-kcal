@@ -15,8 +15,7 @@ struct SnapKcalApp: App {
             RootView()
                 .environment(environment)
                 .modelContainer(environment.container)
-                .preferredColorScheme(.dark)
-                .fontDesign(.monospaced)
+                .preferredColorScheme(.light)
                 .environment(\.locale, AppLocale.current)
                 .tint(Theme.Color.textPrimary)
         }
@@ -47,16 +46,15 @@ enum NavigationBarStyle {
     static func apply() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .black
-        appearance.shadowColor = UIColor(white: 0.18, alpha: 1)
+        appearance.backgroundColor = .white
+        appearance.shadowColor = .clear
         appearance.titleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 13, weight: .semibold),
-            .foregroundColor: UIColor.white,
-            .kern: 1.5,
+            .font: UIFont.systemFont(ofSize: 17, weight: .medium),
+            .foregroundColor: UIColor(white: 0.07, alpha: 1),
         ]
         appearance.largeTitleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 28, weight: .light),
-            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 34, weight: .black, width: .condensed),
+            .foregroundColor: UIColor(white: 0.07, alpha: 1),
         ]
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance

@@ -88,14 +88,14 @@ private struct MealDetailContent: View {
             TextField("Name", text: $name)
                 .font(Theme.Font.link)
                 .padding(Theme.Spacing.s)
-                .tile(Theme.Color.surfaceRaised)
+                .tile(Theme.Color.background, stroke: Theme.Color.border)
                 .onSubmit { viewModel.rename(name) }
             HStack {
                 TextField("kcal", text: $kcalText)
                     .keyboardType(.numberPad)
                     .font(Theme.Font.link)
                     .padding(Theme.Spacing.s)
-                    .tile(Theme.Color.surfaceRaised)
+                    .tile(Theme.Color.background, stroke: Theme.Color.border)
                 Button("Save") {
                     viewModel.rename(name)
                     if let value = Int(kcalText) { viewModel.setKcal(value) }

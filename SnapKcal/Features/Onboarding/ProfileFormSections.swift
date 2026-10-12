@@ -44,7 +44,7 @@ struct NumberField: View {
                 .font(Theme.Font.link)
                 .frame(width: 100)
                 .padding(Theme.Spacing.s)
-                .tile(Theme.Color.surfaceRaised)
+                .tile(Theme.Color.background, stroke: Theme.Color.border)
                 .accessibilityIdentifier(identifier)
         }
     }

@@ -62,7 +62,7 @@ private struct CalendarContent: View {
                 .frame(width: 44, height: 44)
                 .accessibilityLabel(Text("Previous month"))
             Spacer()
-            Text(viewModel.month.appFormatted(.dateTime.month(.wide).year())).uiLabelStyle()
+            Text(viewModel.month.appFormatted(.dateTime.month(.wide).year())).headlineStyle(Theme.Font.metric)
             Spacer()
             if !viewModel.isCurrentMonth {
                 Button("Today") { viewModel.jumpToToday() }.buttonStyle(.secondary)
@@ -103,7 +103,7 @@ struct CalendarCellView: View {
                 Spacer(minLength: 0)
                 if let total = cell.totalKcal, total > 0 {
                     Text(total.formatted())
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .font(.system(size: 11, weight: .heavy).width(.condensed))
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity)
@@ -111,27 +111,14 @@ struct CalendarCellView: View {
                 Spacer(minLength: 0)
             }
         }
-        .foregroundStyle(cell.status == .future ? Theme.Color.textMuted : Theme.Color.textPrimary)
+        .foregroundStyle(cell.status.textColor)
         .padding(3)
         .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
-        .background(fill, in: RoundedRectangle(cornerRadius: 2))
-        .overlay(RoundedRectangle(cornerRadius: 2).stroke(stroke, lineWidth: 1))
+        .background(fill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 
     private var fill: Color {
-        guard cell.dayNumber != nil else { return .clear }
-        switch cell.status {
-        case .empty, .future: return Theme.Color.surface
-        default: return cell.status.color.opacity(0.28)
-        }
-    }
-
-    private var stroke: Color {
-        guard cell.dayNumber != nil else { return .clear }
-        switch cell.status {
-        case .empty, .future: return Theme.Color.border
-        default: return cell.status.color.opacity(0.7)
-        }
+        cell.dayNumber == nil ? .clear : cell.status.color
     }
 }

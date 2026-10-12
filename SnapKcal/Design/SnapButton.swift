@@ -5,35 +5,33 @@ struct SnapButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 2) {
-                Image(systemName: "camera").font(.system(size: 22, weight: .light))
-                Text("SNAP").font(.system(size: 9, weight: .semibold, design: .monospaced)).tracking(2)
-            }
-            .frame(width: 72, height: 72)
+            Image(systemName: "camera.fill")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(Theme.Color.onAccent)
+                .frame(width: 72, height: 72)
         }
-        .buttonStyle(SnapReticleStyle())
+        .buttonStyle(SnapDiscStyle())
         .accessibilityLabel(Text("Snap a meal"))
         .accessibilityIdentifier("snapButton")
     }
 }
 
-private struct SnapReticleStyle: ButtonStyle {
+private struct SnapDiscStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundStyle(configuration.isPressed ? Theme.Color.background : Theme.Color.textPrimary)
-            .background(configuration.isPressed ? Theme.Color.textPrimary : Theme.Color.background)
-            .overlay(Rectangle().stroke(Theme.Color.border, lineWidth: 1))
-            .overlay(CornerBrackets(length: 12, color: Theme.Color.textPrimary))
+            .background(Circle().fill(Theme.Color.accent))
+            .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
             .opacity(isEnabled ? 1 : 0.35)
     }
 }
 
 struct ChevronChip: View {
     var body: some View {
-        Text(">")
-            .font(Theme.Font.data)
+        Image(systemName: "chevron.right")
+            .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(Theme.Color.textMuted)
             .accessibilityHidden(true)
     }

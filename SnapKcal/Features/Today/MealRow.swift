@@ -111,7 +111,7 @@ struct KcalSummary: View {
                 }
             }
             HStack(spacing: Theme.Spacing.s) {
-                SegmentBar(progress: progress, color: isOver ? Theme.Color.danger : Theme.Color.textPrimary)
+                ProgressBar(progress: progress, color: isOver ? Theme.Color.danger : Theme.Color.textPrimary)
                 Text(String(format: "%3d%%", Int((Double(eaten) / Double(max(target, 1)) * 100).rounded())))
                     .font(Theme.Font.data)
                     .foregroundStyle(isOver ? Theme.Color.danger : Theme.Color.textSecondary)

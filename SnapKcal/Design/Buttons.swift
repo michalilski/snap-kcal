@@ -7,45 +7,34 @@ struct AppButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: Theme.Spacing.xs) {
-            Text("[")
-            configuration.label
-            Text("]")
-        }
-        .font(.system(.caption, design: .monospaced, weight: .semibold))
-        .tracking(1)
-        .textCase(.uppercase)
-        .foregroundStyle(foreground(pressed: configuration.isPressed))
-        .padding(.horizontal, Theme.Spacing.m)
-        .frame(minHeight: 40)
-        .background(background(pressed: configuration.isPressed))
-        .overlay(Rectangle().stroke(stroke, lineWidth: 1))
-        .contentShape(Rectangle())
-        .opacity(isEnabled ? 1 : 0.35)
+        configuration.label
+            .font(.system(.subheadline, weight: .medium))
+            .foregroundStyle(foreground)
+            .padding(.horizontal, kind == .minimal ? Theme.Spacing.s : Theme.Spacing.xl)
+            .frame(minHeight: 44)
+            .background(background, in: Capsule())
+            .overlay(Capsule().strokeBorder(stroke, lineWidth: 1.5))
+            .contentShape(Capsule())
+            .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.35)
     }
 
-    private func foreground(pressed: Bool) -> Color {
+    private var foreground: Color {
         switch kind {
-        case .primary: pressed ? Theme.Color.textPrimary : Theme.Color.background
-        case .secondary, .minimal: pressed ? Theme.Color.background : Theme.Color.textPrimary
+        case .primary: Theme.Color.onAccent
+        case .secondary, .minimal: Theme.Color.textPrimary
         case .danger: Theme.Color.danger
         }
     }
 
-    private func background(pressed: Bool) -> Color {
-        switch kind {
-        case .primary: pressed ? Theme.Color.background : Theme.Color.textPrimary
-        case .secondary, .minimal: pressed ? Theme.Color.textPrimary : .clear
-        case .danger: pressed ? Theme.Color.danger.opacity(0.2) : .clear
-        }
+    private var background: Color {
+        kind == .primary ? Theme.Color.accent : .clear
     }
 
     private var stroke: Color {
         switch kind {
-        case .primary: Theme.Color.textPrimary
-        case .secondary: Theme.Color.textSecondary
-        case .minimal: .clear
-        case .danger: Theme.Color.danger.opacity(0.6)
+        case .primary, .minimal: .clear
+        case .secondary: Theme.Color.border
+        case .danger: Theme.Color.danger.opacity(0.5)
         }
     }
 }

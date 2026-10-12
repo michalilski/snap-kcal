@@ -46,7 +46,7 @@ private struct OnboardingContent: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            Text("Snap Kcal").font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
+            Text("Snap Kcal").headlineStyle()
             Text("Step \(viewModel.step + 1) of \(OnboardingViewModel.stepCount)").uiLabelStyle()
             HStack(spacing: Theme.Spacing.xs) {
                 ForEach(0..<OnboardingViewModel.stepCount, id: \.self) { index in

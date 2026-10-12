@@ -51,7 +51,7 @@ private struct StatsContent: View {
                 .frame(width: 44, height: 44)
                 .accessibilityLabel(Text("Previous period"))
             Spacer()
-            Text(periodTitle).uiLabelStyle()
+            Text(periodTitle).headlineStyle(Theme.Font.metric)
             Spacer()
             Button { viewModel.step(1) } label: { Image(systemName: "chevron.right") }
                 .frame(width: 44, height: 44)
@@ -141,7 +141,13 @@ private struct StatsContent: View {
         }
         .chartXAxis {
             AxisMarks(values: .stride(by: .day, count: viewModel.period == .week ? 1 : 7)) { _ in
-                AxisValueLabel(format: viewModel.period == .week ? .dateTime.weekday(.narrow) : .dateTime.day())
+                AxisValueLabel(format: (viewModel.period == .week ? Date.FormatStyle.dateTime.weekday(.narrow) : Date.FormatStyle.dateTime.day()).locale(AppLocale.current))
+            }
+        }
+        .chartYAxis {
+            AxisMarks { value in
+                AxisGridLine()
+                AxisValueLabel { Text((value.as(Int.self) ?? 0).formatted(.number.locale(AppLocale.current))) }
             }
         }
         .frame(height: 220)

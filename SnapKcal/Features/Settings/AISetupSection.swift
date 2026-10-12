@@ -37,7 +37,7 @@ struct AISetupSection: View {
                     .font(Theme.Font.body)
                     .padding(Theme.Spacing.s)
                     .frame(minHeight: 44)
-                    .tile(Theme.Color.surfaceRaised)
+                    .tile(Theme.Color.background, stroke: Theme.Color.border)
                     .accessibilityIdentifier("apiKeyField")
                 Button("Paste") {
                     keyInput = UIPasteboard.general.string ?? ""

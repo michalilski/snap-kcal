@@ -46,7 +46,7 @@ struct MealResultSheet: View {
             if let meal = viewModel.currentMeal { ResultDetails(meal: meal, viewModel: viewModel, isAdjusting: $isAdjusting, isAddingNote: $isAddingNote) }
         case .notFood:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                Text("No food detected").font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
+                Text("No food detected").headlineStyle(Theme.Font.title)
                     .accessibilityIdentifier("noFoodLabel")
                 Text("Try a photo where the meal fills most of the frame.").font(Theme.Font.body)
                 Button("Retake") { viewModel.retake() }.buttonStyle(.primary)
@@ -60,7 +60,7 @@ struct MealResultSheet: View {
 
     private func failed(_ message: String) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-            Text("Analysis failed").font(Theme.Font.title).foregroundStyle(Theme.Color.danger)
+            Text("Analysis failed").font(Theme.Font.title).textCase(.uppercase).foregroundStyle(Theme.Color.danger)
             Text(message).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
                 .accessibilityIdentifier("failedMessage")
             Text("The photo is kept in your log, you can retry later.").font(Theme.Font.micro)
@@ -92,7 +92,7 @@ private struct ResultDetails: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             KcalHero(kcal: meal.kcal, low: meal.kcalLow, high: meal.kcalHigh)
-            Text(meal.name).font(Theme.Font.title).foregroundStyle(Theme.Color.textPrimary)
+            Text(meal.name).headlineStyle(Theme.Font.title)
                 .accessibilityIdentifier("resultMealName")
             Text(meal.summary).font(Theme.Font.body).lineSpacing(4).foregroundStyle(Theme.Color.textPrimary)
             HStack(alignment: .top, spacing: Theme.Spacing.m) {
@@ -130,7 +130,7 @@ struct KcalHero: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .lastTextBaseline, spacing: Theme.Spacing.s) {
                 MetricText(text: kcal.formatted())
-                Text("kcal").uiLabelStyle()
+                Text("kcal").headlineStyle(Theme.Font.metric)
             }
             if high > 0 {
                 Text("\(low.formatted())–\(high.formatted()) kcal").font(Theme.Font.data).foregroundStyle(Theme.Color.textMuted)
@@ -147,14 +147,12 @@ struct TipBox: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: Theme.Spacing.s) {
-            Text(">").font(Theme.Font.data).foregroundStyle(Theme.Color.textPrimary)
+            Image(systemName: "lightbulb.fill").foregroundStyle(Theme.Color.textPrimary)
             Text(text).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
         }
         .padding(Theme.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.Color.accentStrong.opacity(0.12))
-        .overlay(alignment: .leading) { Rectangle().fill(Theme.Color.accent).frame(width: 3) }
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile))
+        .background(Theme.Color.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
@@ -192,7 +190,7 @@ struct AdjustPanel: View {
                     .multilineTextAlignment(.center)
                     .font(Theme.Font.link)
                     .padding(Theme.Spacing.s)
-                    .tile(Theme.Color.surfaceRaised)
+                    .tile(Theme.Color.background, stroke: Theme.Color.border)
                     .onSubmit(commitTyped)
                 Button { viewModel.setManualKcal(meal.kcal + 50) } label: { Image(systemName: "plus") }
                     .buttonStyle(.minimal).accessibilityLabel(Text("Plus 50 kcal"))
@@ -229,7 +227,7 @@ struct NotePanel: View {
             TextField("e.g. cooked in 2 tbsp oil", text: $viewModel.note, axis: .vertical)
                 .font(Theme.Font.body)
                 .padding(Theme.Spacing.s)
-                .tile(Theme.Color.surfaceRaised)
+                .tile(Theme.Color.background, stroke: Theme.Color.border)
                 .accessibilityIdentifier("noteField")
             Button("Re-estimate") { viewModel.reEstimate() }
                 .buttonStyle(.primary)

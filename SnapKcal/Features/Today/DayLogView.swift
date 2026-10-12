@@ -118,7 +118,7 @@ private struct DayLogContent: View {
                                 .font(.system(size: 17))
                                 .foregroundStyle(Theme.Color.textSecondary)
                                 .frame(width: 44, height: 44)
-                                .overlay(Rectangle().stroke(Theme.Color.border, lineWidth: 1))
+                                .background(Circle().fill(Theme.Color.surface))
                         }
                         .disabled(!environment.hasActiveKey)
                         .offset(x: 68)
@@ -167,7 +167,7 @@ private struct DayMealsList: View {
                 }
                 .foregroundStyle(Theme.Color.textMuted)
                 .frame(maxWidth: .infinity, minHeight: 140)
-                .tile(Theme.Color.background)
+                .tile(Theme.Color.surface)
                 .padding(.horizontal, Theme.Spacing.l)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
@@ -194,7 +194,7 @@ private struct DayMealsList: View {
                     .accessibilityLabel(Text("Previous day"))
                     .frame(width: 44, height: 44)
                 Spacer()
-                Text(dateTitle).uiLabelStyle().accessibilityIdentifier("dayTitle")
+                Text(dateTitle).headlineStyle(Theme.Font.metric).accessibilityIdentifier("dayTitle")
                 Spacer()
                 Button { today.step(days: 1) } label: { Image(systemName: "chevron.right") }
                     .accessibilityLabel(Text("Next day"))

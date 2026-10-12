@@ -1,48 +1,49 @@
 import SwiftUI
 
 struct TileModifier: ViewModifier {
-    var fill: Color = Theme.Color.surfaceRaised
-    var stroke: Color = Theme.Color.border
+    var fill: Color = Theme.Color.background
+    var stroke: Color = .clear
+    var lineWidth: CGFloat = 1
 
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous)
         content
-            .background(fill)
-            .overlay(Rectangle().stroke(stroke, lineWidth: 1))
+            .background(fill, in: shape)
+            .overlay(shape.strokeBorder(stroke, lineWidth: lineWidth))
     }
 }
 
 extension View {
-    func tile(_ fill: Color = Theme.Color.surfaceRaised, stroke: Color = Theme.Color.border) -> some View {
+    func tile(_ fill: Color = Theme.Color.background, stroke: Color = .clear) -> some View {
         modifier(TileModifier(fill: fill, stroke: stroke))
     }
 
     func selectableTile(_ isSelected: Bool) -> some View {
-        tile(isSelected ? Theme.Color.textPrimary.opacity(0.08) : Theme.Color.surface, stroke: isSelected ? Theme.Color.textPrimary : Theme.Color.border)
+        modifier(TileModifier(
+            fill: Theme.Color.background,
+            stroke: isSelected ? Theme.Color.textPrimary : Theme.Color.surfaceRaised,
+            lineWidth: isSelected ? 2 : 1
+        ))
     }
 }
 
 struct Divider1px: View {
     var body: some View {
-        Text(String(repeating: "- ", count: 80))
-            .font(Theme.Font.data)
-            .foregroundStyle(Theme.Color.border)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .clipped()
-            .accessibilityHidden(true)
+        Rectangle().fill(Theme.Color.surfaceRaised).frame(height: 1)
     }
 }
 
-struct SegmentBar: View {
+struct ProgressBar: View {
     let progress: Double
-    var segments = 32
     var color: Color = Theme.Color.textPrimary
 
     var body: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<segments, id: \.self) { index in
-                Rectangle()
-                    .fill(Double(index) < progress * Double(segments) ? color : Theme.Color.surfaceRaised)
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.Color.surfaceRaised)
+                Capsule()
+                    .fill(color)
+                    .frame(width: progress > 0 ? max(proxy.size.width * min(progress, 1), 8) : 0)
             }
         }
         .frame(height: 8)
