@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Observation
 import SwiftData
 
@@ -7,6 +8,7 @@ import SwiftData
 final class MealDetailViewModel {
     let meal: Meal?
     var isReanalyzing = false
+    private(set) var refineError: String?
 
     private let environment: AppEnvironment
 
@@ -45,8 +47,37 @@ final class MealDetailViewModel {
     func reanalyze(with model: AIModel) async {
         guard let meal else { return }
         isReanalyzing = true
-        await environment.analyzer.run(meal: meal, image: nil, note: meal.userNote, modelOverride: model)
+        finish(await environment.analyzer.rerun(meal, modelOverride: model))
+    }
+
+    func sendFollowUp(image: UIImage?, text: String) async {
+        guard let meal, !isReanalyzing else { return }
+        isReanalyzing = true
+        refineError = nil
+        finish(await environment.analyzer.send(to: meal, image: image, text: text))
+    }
+
+    func retryFollowUp() async {
+        guard let meal, !isReanalyzing else { return }
+        isReanalyzing = true
+        refineError = nil
+        finish(await environment.analyzer.rerun(meal))
+    }
+
+    func discardFollowUp() {
+        guard let meal else { return }
+        environment.analyzer.discardPendingTurn(of: meal)
+        refineError = nil
+        environment.dataChanged()
+    }
+
+    private func finish(_ outcome: TurnOutcome) {
         isReanalyzing = false
+        switch outcome {
+        case .estimated: refineError = nil
+        case .notFood: refineError = String(localized: "That doesn't look like food, so the estimate is unchanged.")
+        case .failed(let message): refineError = message
+        }
         environment.dataChanged()
     }
 

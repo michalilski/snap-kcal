@@ -87,13 +87,22 @@ final class SettingsViewModel {
         let started = Date.now
         do {
             let pipeline = AnalysisPipeline(settings: settings)
-            let context = AnalysisContext(goal: .maintain, targetKcal: 2000, eatenTodayKcal: 0, localTime: "12:00", languageName: "English", userNote: nil, detail: .fast)
-            _ = try await pipeline.run(provider: source, image: ImageProcessor.testImage(), context: context, model: model, apiKey: key)
+            _ = try await pipeline.run(provider: source, turns: [.testImage], context: .test, model: model, apiKey: key)
             settings.testedModels.insert(model.id)
             testState = .ok(Date.now.timeIntervalSince(started))
         } catch {
             testState = .failed([error.userMessage, error.detail].compactMap { $0 }.joined(separator: "\n"))
         }
+    }
+
+    func connectHealth() async {
+        await environment.workouts.requestAccess()
+        await environment.workouts.refresh(dayKey: DayKey.key(for: .now))
+        environment.dataChanged()
+    }
+
+    var todayWorkoutKcal: Int {
+        environment.workouts.kcal(for: DayKey.key(for: .now))
     }
 
     func updateProfile() {

@@ -39,6 +39,14 @@ struct MealAnalysis: Codable, Equatable, Sendable {
         }
     }
 
+    /// The answer serialized like the model returns it, used as the assistant turn in follow-up requests.
+    var schemaJSONString: String {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.outputFormatting = .sortedKeys
+        return (try? encoder.encode(self)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
+    }
+
     func sanitized() -> MealAnalysis {
         let clampKcal = { (value: Int) in min(max(value, 0), 5000) }
         let total = clampKcal(kcalTotal)

@@ -15,11 +15,17 @@ final class StatsViewModel {
     private(set) var interval: DateInterval?
 
     private let store: MealStore
+    private let workouts: WorkoutCalories?
     private let calendar: Calendar
 
-    init(store: MealStore, calendar: Calendar = DayKey.calendar) {
+    init(store: MealStore, workouts: WorkoutCalories? = nil, calendar: Calendar = DayKey.calendar) {
         self.store = store
+        self.workouts = workouts
         self.calendar = calendar
+    }
+
+    var currentInterval: DateInterval? {
+        calendar.dateInterval(of: period == .week ? .weekOfYear : .month, for: anchor)
     }
 
     var canStepForward: Bool {
@@ -34,8 +40,9 @@ final class StatsViewModel {
         let todayKey = DayKey.key(for: .now, calendar: calendar)
         let totals = store.dayTotals(from: keys.first ?? todayKey, to: keys.last ?? todayKey)
         target = store.currentTarget()
-        summary = StatsCalculator.summary(for: interval, totals: totals, today: .now, target: target, calendar: calendar)
-        bars = StatsCalculator.bars(for: interval, totals: totals, today: .now, target: target, calendar: calendar)
+        let bonus = workouts?.bonuses ?? [:]
+        summary = StatsCalculator.summary(for: interval, totals: totals, today: .now, target: target, bonus: bonus, calendar: calendar)
+        bars = StatsCalculator.bars(for: interval, totals: totals, today: .now, target: target, bonus: bonus, calendar: calendar)
         todaySoFar = store.dayTotals(from: todayKey, to: todayKey)[todayKey] ?? 0
     }
 

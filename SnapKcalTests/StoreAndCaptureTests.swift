@@ -89,18 +89,36 @@ struct StoreAndCaptureTests {
         #expect(store.fetchMeals(dayKey: DayKey.key(for: .now)).first?.name == "Soup")
     }
 
-    private func makeCapture(store: MealStore) -> CaptureViewModel {
-        let settings = TestStore.settings()
+    private func makeAnalyzer(store: MealStore, settings: AppSettings) -> MealAnalyzer {
         let providers: [Provider: any AIProvider] = [.openai: MockProvider(provider: .openai, delay: .milliseconds(10))]
         let catalog = ModelCatalog(providers: providers, directory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString))
-        let analyzer = MealAnalyzer(providers: providers, keys: KeyResolver { _ in "k" }, settings: settings, store: store, catalog: catalog)
-        return CaptureViewModel(store: store, analyzer: analyzer, settings: settings)
+        let workouts = WorkoutCalories(source: MockActivitySource(todayKcal: 0), settings: settings)
+        return MealAnalyzer(providers: providers, keys: KeyResolver { _ in "k" }, settings: settings, store: store, catalog: catalog, workouts: workouts)
+    }
+
+    private func makeCapture(store: MealStore) -> CaptureViewModel {
+        let settings = TestStore.settings()
+        return CaptureViewModel(store: store, analyzer: makeAnalyzer(store: store, settings: settings), settings: settings)
     }
 
     private func waitWhileAnalyzing(_ capture: CaptureViewModel) async {
-        for _ in 0..<200 {
-            if case .analyzing = capture.phase { try? await Task.sleep(for: .milliseconds(10)) } else { return }
+        for _ in 0..<300 {
+            if case .analyzing = capture.phase { try? await Task.sleep(for: .milliseconds(10)) } else if capture.isRefining {
+                try? await Task.sleep(for: .milliseconds(10))
+            } else { return }
         }
+    }
+
+    private func captureMeal(_ capture: CaptureViewModel, note: String = "", image: UIImage? = LibraryPhotoLoader.sampleMealImage(), day: Date = .now) async {
+        if let image {
+            capture.snap(for: day, source: .library)
+            capture.photoPicked(image, captureDate: nil)
+        } else {
+            capture.describe(for: day)
+        }
+        capture.note = note
+        capture.submit()
+        await waitWhileAnalyzing(capture)
     }
 
     @Test func captureLoopSavesMeal() async {
@@ -108,25 +126,69 @@ struct StoreAndCaptureTests {
         let capture = makeCapture(store: store)
         capture.snap(for: .now, source: .library)
         capture.photoPicked(LibraryPhotoLoader.sampleMealImage(), captureDate: nil)
+        #expect(capture.phase == .composing)
+        capture.submit()
         await waitWhileAnalyzing(capture)
         guard case .result = capture.phase else { Issue.record("expected result, got \(capture.phase)"); return }
         let meal = capture.currentMeal
         #expect(meal?.kcal == 600)
         #expect(meal?.status == .done)
         #expect(meal?.thumbnail != nil)
+        #expect(meal?.turns.count == 1)
+        #expect(meal?.orderedTurns.first?.reply?.kcalTotal == 600)
         capture.setPortion(0.5)
         #expect(meal?.kcal == 300)
         capture.finish()
         #expect(capture.phase == .idle)
     }
 
+    @Test func textOnlyMeal() async {
+        let store = TestStore.make()
+        let capture = makeCapture(store: store)
+        capture.describe(for: .now)
+        #expect(!capture.canSubmit)
+        await captureMeal(capture, note: "grahamka z Żabki", image: nil)
+        let meal = capture.currentMeal
+        #expect(meal?.status == .done)
+        #expect(meal?.photo == nil)
+        #expect(meal?.orderedTurns.first?.text == "grahamka z Żabki")
+    }
+
+    @Test func followUpsRefineTheSameMeal() async {
+        let store = TestStore.make()
+        let capture = makeCapture(store: store)
+        await captureMeal(capture)
+        capture.sendFollowUp(image: nil, text: "there are also 2 slices of ham")
+        await waitWhileAnalyzing(capture)
+        capture.sendFollowUp(image: LibraryPhotoLoader.sampleMealImage(), text: "")
+        await waitWhileAnalyzing(capture)
+        let meal = capture.currentMeal
+        #expect(store.allMeals().count == 1)
+        #expect(meal?.turns.count == 3)
+        #expect(meal?.kcal == 840)
+        #expect(meal?.orderedTurns.map { $0.reply?.kcalTotal } == [600, 720, 840])
+        #expect(meal?.userNote == "there are also 2 slices of ham")
+    }
+
+    @Test func failedFollowUpKeepsEstimate() async {
+        let store = TestStore.make()
+        let capture = makeCapture(store: store)
+        await captureMeal(capture)
+        capture.sendFollowUp(image: nil, text: "fail please")
+        await waitWhileAnalyzing(capture)
+        let meal = capture.currentMeal
+        #expect(capture.refineError != nil)
+        #expect(meal?.status == .done)
+        #expect(meal?.kcal == 600)
+        capture.discardFollowUp()
+        #expect(meal?.turns.count == 1)
+        #expect(capture.refineError == nil)
+    }
+
     @Test func captureNotFoodDeletesMeal() async {
         let store = TestStore.make()
         let capture = makeCapture(store: store)
-        capture.snap(for: .now, source: .library)
-        capture.note = "notfood"
-        capture.photoPicked(LibraryPhotoLoader.sampleMealImage(), captureDate: nil)
-        await waitWhileAnalyzing(capture)
+        await captureMeal(capture, note: "notfood")
         #expect(capture.phase == .notFood)
         #expect(store.allMeals().isEmpty)
     }
@@ -134,14 +196,11 @@ struct StoreAndCaptureTests {
     @Test func captureFailureKeepsRetryableMeal() async {
         let store = TestStore.make()
         let capture = makeCapture(store: store)
-        capture.snap(for: .now, source: .library)
-        capture.note = "fail"
-        capture.photoPicked(LibraryPhotoLoader.sampleMealImage(), captureDate: nil)
-        await waitWhileAnalyzing(capture)
+        await captureMeal(capture, note: "fail")
         guard case .failed = capture.phase else { Issue.record("expected failed, got \(capture.phase)"); return }
         #expect(store.allMeals().first?.status == .failed)
         #expect(store.allMeals().first?.photo != nil)
-        capture.note = ""
+        store.allMeals().first?.orderedTurns.first?.text = nil
         capture.retry()
         await waitWhileAnalyzing(capture)
         #expect(store.allMeals().first?.status == .done)
@@ -151,10 +210,33 @@ struct StoreAndCaptureTests {
         let store = TestStore.make()
         let capture = makeCapture(store: store)
         let lastTuesday = Calendar.current.date(byAdding: .day, value: -6, to: .now)!
-        capture.snap(for: lastTuesday, source: .library)
-        capture.photoPicked(LibraryPhotoLoader.sampleMealImage(), captureDate: nil)
-        await waitWhileAnalyzing(capture)
+        await captureMeal(capture, day: lastTuesday)
         #expect(store.allMeals().first?.dayKey == DayKey.key(for: lastTuesday))
+    }
+
+    @Test func undoRestoresConversation() async {
+        let store = TestStore.make()
+        let capture = makeCapture(store: store)
+        await captureMeal(capture, note: "toast")
+        guard let meal = capture.currentMeal else { Issue.record("no meal"); return }
+        capture.finish()
+        let today = TodayViewModel(anchor: .now, store: store)
+        today.delete(meal)
+        #expect(store.allMeals().isEmpty)
+        today.undoDelete()
+        #expect(store.allMeals().first?.orderedTurns.first?.text == "toast")
+        #expect(store.allMeals().first?.orderedTurns.first?.reply?.kcalTotal == 600)
+    }
+
+    @Test func workoutCaloriesFollowSetting() async {
+        let settings = TestStore.settings()
+        let workouts = WorkoutCalories(source: MockActivitySource(todayKcal: 320), settings: settings)
+        let today = DayKey.key(for: .now)
+        await workouts.refresh(dayKey: today)
+        #expect(workouts.kcal(for: today) == 320)
+        settings.useWorkouts = false
+        #expect(workouts.kcal(for: today) == 0)
+        #expect(workouts.bonuses.isEmpty)
     }
 
     @Test func exportFormats() throws {

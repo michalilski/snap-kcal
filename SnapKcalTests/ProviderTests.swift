@@ -6,7 +6,8 @@ import Testing
 @Suite(.serialized)
 struct ProviderTests {
     let model = AIModel(id: "gpt-x", displayName: "gpt-x", provider: .openai, createdAt: nil, supportsStructuredOutput: nil, supportsEffort: nil)
-    let context = AnalysisContext(goal: .maintain, targetKcal: 2000, eatenTodayKcal: 0, localTime: "12:00", languageName: "English", userNote: nil, detail: .fast)
+    let context = AnalysisContext.test
+    let turns = [ConversationTurn(imageJPEG: Data([1]), text: nil, reply: nil)]
 
     private func pipeline() -> AnalysisPipeline {
         var pipeline = AnalysisPipeline(settings: TestStore.settings())
@@ -16,7 +17,7 @@ struct ProviderTests {
 
     @Test func openAIEndToEnd() async throws {
         let provider = OpenAIProvider(client: StubURLProtocol.client([(200, Fixture.data("openai_response"))]))
-        let result = try await provider.analyze(imageJPEG: Data([1]), context: context, model: model, apiKey: "k", options: .init(useSchema: true, useEffort: false))
+        let result = try await provider.analyze(turns: turns, context: context, model: model, apiKey: "k", options: .init(useSchema: true, useEffort: false))
         #expect(result.analysis.kcalTotal == 600)
         #expect(result.inputTokens == 812)
     }
@@ -24,14 +25,14 @@ struct ProviderTests {
     @Test func invalidKeyMapsTo401() async {
         let provider = OpenAIProvider(client: StubURLProtocol.client([(401, Fixture.data("openai_error_401"))]))
         await #expect(throws: AIError.invalidKey) {
-            try await provider.analyze(imageJPEG: Data([1]), context: context, model: model, apiKey: "k", options: .init(useSchema: true, useEffort: false))
+            try await provider.analyze(turns: turns, context: context, model: model, apiKey: "k", options: .init(useSchema: true, useEffort: false))
         }
     }
 
     @Test func pipelineRetriesOnceAfterOverload() async throws {
         let provider = AnthropicProvider(client: StubURLProtocol.client([(529, Data()), (200, Fixture.data("anthropic_response"))]))
         let anthropicModel = AIModel.manual("claude-x", provider: .anthropic)
-        let result = try await pipeline().run(provider: provider, image: Data([1]), context: context, model: anthropicModel, apiKey: "k")
+        let result = try await pipeline().run(provider: provider, turns: turns, context: context, model: anthropicModel, apiKey: "k")
         #expect(result.analysis.kcalTotal == 600)
         #expect(StubURLProtocol.requests.count == 2)
     }
@@ -39,7 +40,7 @@ struct ProviderTests {
     @Test func pipelineFailsAfterSecondRateLimit() async {
         let provider = AnthropicProvider(client: StubURLProtocol.client([(429, Fixture.data("anthropic_error_429")), (429, Data())]))
         await #expect(throws: AIError.rateLimited(retryAfter: nil)) {
-            try await pipeline().run(provider: provider, image: Data([1]), context: context, model: .manual("c", provider: .anthropic), apiKey: "k")
+            try await pipeline().run(provider: provider, turns: turns, context: context, model: .manual("c", provider: .anthropic), apiKey: "k")
         }
     }
 
@@ -50,7 +51,7 @@ struct ProviderTests {
         let error = Data(#"{"error":{"message":"Unsupported parameter: 'reasoning.effort'"}}"#.utf8)
         let provider = OpenAIProvider(client: StubURLProtocol.client([(400, error), (200, Fixture.data("openai_response"))]))
         let reasoningModel = AIModel.manual("o3-mini", provider: .openai)
-        _ = try await pipeline.run(provider: provider, image: Data([1]), context: context, model: reasoningModel, apiKey: "k")
+        _ = try await pipeline.run(provider: provider, turns: turns, context: context, model: reasoningModel, apiKey: "k")
         #expect(settings.modelsWithoutReasoning.contains("o3-mini"))
         #expect(StubURLProtocol.requests.last?.jsonBody["reasoning"] == nil)
     }
@@ -60,7 +61,7 @@ struct ProviderTests {
         let pipeline = AnalysisPipeline(settings: settings)
         let error = Data(#"{"error":{"message":"Invalid parameter: 'text.format' is not supported with this model."}}"#.utf8)
         let provider = OpenAIProvider(client: StubURLProtocol.client([(400, error), (200, Fixture.data("openai_response"))]))
-        _ = try await pipeline.run(provider: provider, image: Data([1]), context: context, model: model, apiKey: "k")
+        _ = try await pipeline.run(provider: provider, turns: turns, context: context, model: model, apiKey: "k")
         #expect(settings.modelsWithoutSchema.contains("gpt-x"))
         #expect(StubURLProtocol.requests.last?.jsonBody["text"] == nil)
     }

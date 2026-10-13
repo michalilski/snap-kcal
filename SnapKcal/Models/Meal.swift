@@ -38,6 +38,8 @@ final class Meal {
     @Attribute(.externalStorage) var photo: Data?
     @Attribute(.externalStorage) var thumbnail: Data?
 
+    @Relationship(deleteRule: .cascade, inverse: \MealTurn.meal) var turns: [MealTurn] = []
+
     init(eatenAt: Date, provider: Provider = .openai, modelId: String = "") {
         id = UUID()
         dayKey = DayKey.key(for: eatenAt)
@@ -61,6 +63,14 @@ final class Meal {
         portionMultiplier = 1
         self.provider = provider
         self.modelId = modelId
+    }
+
+    var orderedTurns: [MealTurn] {
+        turns.sorted { $0.index < $1.index }
+    }
+
+    var hasEstimate: Bool {
+        status == .done
     }
 
     var items: [DetectedItem] {

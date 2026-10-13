@@ -59,6 +59,17 @@ struct StatsCalculatorTests {
         #expect(summary?.daysLogged == 2)
     }
 
+    @Test func workoutBonusRaisesDailyTarget() {
+        let totals = ["2026-10-05": 2300, "2026-10-06": 2300]
+        let bonus = ["2026-10-05": 400]
+        let summary = StatsCalculator.summary(for: week(of: "2026-10-07"), totals: totals, today: TestCalendar.date("2026-10-20"), target: 2000, bonus: bonus, calendar: calendar)
+        #expect(summary?.onTargetDays == 1)
+        #expect(summary?.vsTarget == 100)
+        let bars = StatsCalculator.bars(for: week(of: "2026-10-07"), totals: totals, today: TestCalendar.date("2026-10-20"), target: 2000, bonus: bonus, calendar: calendar)
+        #expect(bars.first { $0.dayKey == "2026-10-05" }?.status == .onTarget)
+        #expect(bars.first { $0.dayKey == "2026-10-06" }?.status == .over)
+    }
+
     @Test func onlyDoneMealsCount() {
         let done = Meal(eatenAt: .now)
         done.status = .done

@@ -17,6 +17,8 @@ final class AppSettings {
     var modelsWithoutReasoning: Set<String> { didSet { defaults.set(Array(modelsWithoutReasoning), forKey: "modelsWithoutReasoning") } }
     var saveRawResponse: Bool { didSet { defaults.set(saveRawResponse, forKey: "saveRawResponse") } }
     var testedModels: Set<String> { didSet { defaults.set(Array(testedModels), forKey: "testedModels") } }
+    var useWorkouts: Bool { didSet { defaults.set(useWorkouts, forKey: "useWorkouts") } }
+    var healthAccessRequested: Bool { didSet { defaults.set(healthAccessRequested, forKey: "healthAccessRequested") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -31,6 +33,8 @@ final class AppSettings {
         modelsWithoutReasoning = Set(defaults.stringArray(forKey: "modelsWithoutReasoning") ?? [])
         saveRawResponse = defaults.bool(forKey: "saveRawResponse")
         testedModels = Set(defaults.stringArray(forKey: "testedModels") ?? [])
+        useWorkouts = defaults.object(forKey: "useWorkouts") as? Bool ?? true
+        healthAccessRequested = defaults.bool(forKey: "healthAccessRequested")
     }
 
     func modelId(for provider: Provider) -> String? {

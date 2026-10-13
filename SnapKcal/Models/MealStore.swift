@@ -12,13 +12,30 @@ final class MealStore {
     static func makeContainer(inMemory: Bool) throws -> ModelContainer {
         try FileManager.default.createDirectory(at: .applicationSupportDirectory, withIntermediateDirectories: true)
         return try ModelContainer(
-            for: Meal.self, UserProfile.self, WeightEntry.self,
+            for: Meal.self, MealTurn.self, UserProfile.self, WeightEntry.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: inMemory)
         )
     }
 
     func insert(_ meal: Meal) {
         context.insert(meal)
+        save()
+    }
+
+    func appendTurn(to meal: Meal, text: String?, photo: Data?) -> MealTurn {
+        let turn = MealTurn(index: (meal.turns.map(\.index).max() ?? -1) + 1, text: text, photo: photo)
+        context.insert(turn)
+        turn.meal = meal
+        save()
+        return turn
+    }
+
+    func restore(_ snapshots: [MealTurn.Snapshot], to meal: Meal) {
+        for snapshot in snapshots {
+            let turn = MealTurn(snapshot: snapshot)
+            context.insert(turn)
+            turn.meal = meal
+        }
         save()
     }
 

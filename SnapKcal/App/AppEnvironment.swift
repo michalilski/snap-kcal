@@ -11,6 +11,7 @@ final class AppEnvironment {
     @ObservationIgnored let providers: [Provider: any AIProvider]
     @ObservationIgnored let catalog: ModelCatalog
     @ObservationIgnored let analyzer: MealAnalyzer
+    let workouts: WorkoutCalories
     let settings: AppSettings
     let isMock: Bool
     var todayKey = DayKey.key(for: .now)
@@ -28,6 +29,7 @@ final class AppEnvironment {
         let store = MealStore(context: container.mainContext)
         let catalog = ModelCatalog(providers: providers, directory: URL.applicationSupportDirectory.appending(path: isMock ? "mock" : "live"))
         let keys = KeyResolver { provider in isMock ? "mock-key" : keychain.key(for: provider) }
+        let workouts = WorkoutCalories(source: isMock ? MockActivitySource() : HealthKitActivitySource(), settings: settings)
 
         self.container = container
         self.store = store
@@ -36,7 +38,8 @@ final class AppEnvironment {
         self.catalog = catalog
         self.settings = settings
         self.isMock = isMock
-        analyzer = MealAnalyzer(providers: providers, keys: keys, settings: settings, store: store, catalog: catalog)
+        self.workouts = workouts
+        analyzer = MealAnalyzer(providers: providers, keys: keys, settings: settings, store: store, catalog: catalog, workouts: workouts)
         if !isUITesting {
             EnvKeySeeder(keychain: keychain, settings: settings).seed()
         }

@@ -6,6 +6,7 @@ import Observation
 final class TodayViewModel {
     var anchor: Date
     var undoCandidate: Meal?
+    private var undoTurns: [MealTurn.Snapshot] = []
     var undoDeadline: Date?
 
     private let store: MealStore
@@ -35,6 +36,7 @@ final class TodayViewModel {
 
     func delete(_ meal: Meal) {
         undoCandidate = meal.detachedCopy()
+        undoTurns = meal.orderedTurns.map(\.snapshot)
         let deadline = Date.now.addingTimeInterval(5)
         undoDeadline = deadline
         store.delete(meal)
@@ -48,6 +50,7 @@ final class TodayViewModel {
     func undoDelete() {
         guard let copy = undoCandidate else { return }
         store.insert(copy)
+        store.restore(undoTurns, to: copy)
         clearUndo()
         onChange()
     }
@@ -55,5 +58,6 @@ final class TodayViewModel {
     private func clearUndo() {
         undoCandidate = nil
         undoDeadline = nil
+        undoTurns = []
     }
 }

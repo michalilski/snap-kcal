@@ -4,51 +4,39 @@ struct MealResultSheet: View {
     @Bindable var viewModel: CaptureViewModel
     let alternativeModels: [AIModel]
     @State private var isAdjusting = false
-    @State private var isAddingNote = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-                photo
                 content
             }
             .padding(Theme.Spacing.l)
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(Theme.Color.background.ignoresSafeArea())
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 
     @ViewBuilder
-    private var photo: some View {
-        if let data = viewModel.currentMeal?.photo ?? viewModel.currentMeal?.thumbnail, let image = UIImage(data: data) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: 220)
-                .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.panel))
-                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(Theme.Color.border, lineWidth: 1))
-                .accessibilityHidden(true)
-        }
-    }
-
-    @ViewBuilder
     private var content: some View {
         switch viewModel.phase {
+        case .composing:
+            ComposeStep(viewModel: viewModel)
         case .analyzing:
-            VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-                LoadingLabel(text: "Reading your plate…")
-                    .accessibilityIdentifier("analyzingLabel")
-                Button("Close") { viewModel.dismissWhileAnalyzing() }.buttonStyle(.minimal)
-            }
+            if let meal = viewModel.currentMeal { MealConversationView(meal: meal, isRefining: false) }
+            LoadingLabel(text: "Reading your plate…")
+                .accessibilityIdentifier("analyzingLabel")
+            Button("Close") { viewModel.dismissWhileAnalyzing() }.buttonStyle(.secondary)
         case .result:
-            if let meal = viewModel.currentMeal { ResultDetails(meal: meal, viewModel: viewModel, isAdjusting: $isAdjusting, isAddingNote: $isAddingNote) }
+            if let meal = viewModel.currentMeal {
+                ResultDetails(meal: meal, viewModel: viewModel, isAdjusting: $isAdjusting)
+            }
         case .notFood:
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 Text("No food detected").headlineStyle(Theme.Font.title)
                     .accessibilityIdentifier("noFoodLabel")
-                Text("Try a photo where the meal fills most of the frame.").font(Theme.Font.body)
+                Text("Try a photo where the meal fills most of the frame, or describe it in words.").font(Theme.Font.body)
                 Button("Retake") { viewModel.retake() }.buttonStyle(.primary)
             }
         case .failed(_, let message):
@@ -60,10 +48,11 @@ struct MealResultSheet: View {
 
     private func failed(_ message: String) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            if let meal = viewModel.currentMeal { MealConversationView(meal: meal, isRefining: false) }
             Text("Analysis failed").font(Theme.Font.title).textCase(.uppercase).foregroundStyle(Theme.Color.danger)
             Text(message).font(Theme.Font.body).foregroundStyle(Theme.Color.textPrimary)
                 .accessibilityIdentifier("failedMessage")
-            Text("The photo is kept in your log, you can retry later.").font(Theme.Font.micro)
+            Text("The meal is kept in your log, you can retry later.").font(Theme.Font.micro)
             HStack {
                 Button("Retry") { viewModel.retry() }.buttonStyle(.primary).accessibilityIdentifier("retryButton")
                 if !alternativeModels.isEmpty {
@@ -83,14 +72,84 @@ struct MealResultSheet: View {
     }
 }
 
+private struct ComposeStep: View {
+    @Bindable var viewModel: CaptureViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
+            Text(viewModel.pendingImage == nil ? "Describe your meal" : "Add details").headlineStyle()
+            if let image = viewModel.pendingImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: 240)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.image, style: .continuous))
+                    .accessibilityHidden(true)
+            }
+            TextField(
+                viewModel.pendingImage == nil ? "e.g. grahamka z Żabki, 2 eggs and a coffee" : "Optional, e.g. this toast also has ham",
+                text: $viewModel.note,
+                axis: .vertical
+            )
+            .lineLimit(2...6)
+            .font(Theme.Font.body)
+            .padding(Theme.Spacing.m)
+            .background(Theme.Color.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
+            .accessibilityIdentifier("composeField")
+            Text("Any language works, answers come back in English.").font(Theme.Font.micro).foregroundStyle(Theme.Color.textSecondary)
+            HStack {
+                Button("Cancel") { viewModel.cancelPicking() }.buttonStyle(.secondary)
+                Spacer()
+                Button("Analyze") { viewModel.submit() }
+                    .buttonStyle(.primary)
+                    .disabled(!viewModel.canSubmit)
+                    .accessibilityIdentifier("analyzeButton")
+            }
+        }
+    }
+}
+
 private struct ResultDetails: View {
     let meal: Meal
     let viewModel: CaptureViewModel
     @Binding var isAdjusting: Bool
-    @Binding var isAddingNote: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
+            MealEstimateSummary(meal: meal)
+            if isAdjusting { AdjustPanel(meal: meal, viewModel: viewModel) }
+            VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+                PanelTitle("Conversation")
+                MealConversationView(meal: meal, isRefining: viewModel.isRefining)
+                if let error = viewModel.refineError {
+                    RefineErrorView(message: error, onRetry: viewModel.retryFollowUp, onDiscard: viewModel.discardFollowUp)
+                }
+                MessageComposer(placeholder: "Add details or a photo to refine", isBusy: viewModel.isRefining) { image, text in
+                    viewModel.sendFollowUp(image: image, text: text)
+                }
+            }
+            actions
+        }
+    }
+
+    private var actions: some View {
+        VStack(spacing: Theme.Spacing.s) {
+            HStack {
+                Button("Done") { viewModel.finish() }.buttonStyle(.primary).accessibilityIdentifier("doneButton")
+                Button("Adjust") { isAdjusting.toggle() }.buttonStyle(.secondary)
+            }
+            Button("Delete") { viewModel.discard() }.buttonStyle(.danger)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+/// Current numbers of a meal: kcal hero, name, description, score, tip and macros.
+struct MealEstimateSummary: View {
+    let meal: Meal
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
             KcalHero(kcal: meal.kcal, low: meal.kcalLow, high: meal.kcalHigh)
             Text(meal.name).headlineStyle(Theme.Font.title)
                 .accessibilityIdentifier("resultMealName")
@@ -101,23 +160,24 @@ private struct ResultDetails: View {
             }
             if !meal.tip.isEmpty { TipBox(text: meal.tip) }
             MacroChips(meal: meal)
-            Text("Confidence: \(meal.confidence.rawValue)").font(Theme.Font.micro)
-            if isAdjusting { AdjustPanel(meal: meal, viewModel: viewModel) }
-            if isAddingNote { NotePanel(viewModel: viewModel) }
-            actions
         }
     }
+}
 
-    private var actions: some View {
-        VStack(spacing: Theme.Spacing.s) {
+struct RefineErrorView: View {
+    let message: String
+    let onRetry: () -> Void
+    let onDiscard: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            Text(message).font(Theme.Font.body).foregroundStyle(Theme.Color.danger)
+                .accessibilityIdentifier("refineError")
             HStack {
-                Button("Done") { viewModel.finish() }.buttonStyle(.primary).accessibilityIdentifier("doneButton")
-                Button("Adjust") { isAdjusting.toggle() }.buttonStyle(.secondary)
-                Button("Add note") { isAddingNote.toggle() }.buttonStyle(.secondary)
+                Button("Retry", action: onRetry).buttonStyle(.secondary)
+                Button("Discard message", action: onDiscard).buttonStyle(.minimal)
             }
-            Button("Delete") { viewModel.discard() }.buttonStyle(.danger)
         }
-        .frame(maxWidth: .infinity)
     }
 }
 
@@ -216,22 +276,5 @@ struct AdjustPanel: View {
 
     private func commitTyped() {
         if let value = Int(typed) { viewModel.setManualKcal(value) }
-    }
-}
-
-struct NotePanel: View {
-    @Bindable var viewModel: CaptureViewModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-            TextField("e.g. cooked in 2 tbsp oil", text: $viewModel.note, axis: .vertical)
-                .font(Theme.Font.body)
-                .padding(Theme.Spacing.s)
-                .tile(Theme.Color.background, stroke: Theme.Color.border)
-                .accessibilityIdentifier("noteField")
-            Button("Re-estimate") { viewModel.reEstimate() }
-                .buttonStyle(.primary)
-                .disabled(viewModel.note.trimmingCharacters(in: .whitespaces).isEmpty)
-        }
     }
 }

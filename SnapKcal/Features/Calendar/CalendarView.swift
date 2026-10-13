@@ -21,10 +21,18 @@ struct CalendarView: View {
             DayLogView(mode: .day(DayKey.startOfDay(route.dayKey)))
         }
         .task {
-            if viewModel == nil { viewModel = CalendarViewModel(store: environment.store) }
+            if viewModel == nil { viewModel = CalendarViewModel(store: environment.store, workouts: environment.workouts) }
             viewModel?.load()
+            await refreshWorkouts()
         }
         .onChange(of: environment.dataVersion) { viewModel?.load() }
+        .onChange(of: viewModel?.month) { Task { await refreshWorkouts() } }
+    }
+
+    private func refreshWorkouts() async {
+        guard let interval = viewModel?.monthInterval else { return }
+        await environment.workouts.refresh(interval)
+        viewModel?.load()
     }
 }
 

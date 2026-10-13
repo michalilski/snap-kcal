@@ -89,9 +89,11 @@ struct UndoToast: View {
 struct KcalSummary: View {
     let eaten: Int
     let target: Int
+    var workoutKcal = 0
 
-    private var progress: Double { min(Double(eaten) / Double(max(target, 1)), 1) }
-    private var isOver: Bool { eaten > target }
+    private var budget: Int { target + workoutKcal }
+    private var progress: Double { Double(eaten) / Double(max(budget, 1)) }
+    private var isOver: Bool { eaten > budget }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
@@ -99,22 +101,28 @@ struct KcalSummary: View {
                 MetricText(text: eaten.formatted())
                     .accessibilityLabel(Text("\(eaten) kilocalories eaten"))
                     .accessibilityIdentifier("dayTotal")
-                Text("/ \(target.formatted()) kcal")
+                Text("/ \(budget.formatted()) kcal")
                     .font(Theme.Font.data)
                     .foregroundStyle(Theme.Color.textMuted)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(isOver ? "Over" : "Remaining").uiLabelStyle()
-                    Text(abs(target - eaten).formatted())
+                    Text(abs(budget - eaten).formatted())
                         .font(Theme.Font.metric)
                         .foregroundStyle(isOver ? Theme.Color.danger : Theme.Color.textPrimary)
                 }
             }
             HStack(spacing: Theme.Spacing.s) {
                 ProgressBar(progress: progress, color: isOver ? Theme.Color.danger : Theme.Color.textPrimary)
-                Text(String(format: "%3d%%", Int((Double(eaten) / Double(max(target, 1)) * 100).rounded())))
+                Text("\(Int((progress * 100).rounded()))%")
                     .font(Theme.Font.data)
                     .foregroundStyle(isOver ? Theme.Color.danger : Theme.Color.textSecondary)
+            }
+            if workoutKcal > 0 {
+                Label("\(target.formatted()) goal + \(workoutKcal.formatted()) from workouts", systemImage: "figure.run")
+                    .font(Theme.Font.micro)
+                    .foregroundStyle(Theme.Color.textSecondary)
+                    .accessibilityIdentifier("workoutBonus")
             }
         }
     }

@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a photo of your meal to estimate calories.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Snap Kcal reads active calories from your workouts to raise your daily calorie goal on training days.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Pick an existing photo of a meal to estimate calories.</string>
 	<key>UILaunchScreen</key>

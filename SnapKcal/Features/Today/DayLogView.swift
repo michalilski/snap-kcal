@@ -53,6 +53,13 @@ private struct DayLogContent: View {
             snapBar
         }
         .background(Theme.Color.background)
+        .task(id: today.dayKey) {
+            await environment.workouts.requestAccessIfNeeded()
+            await environment.workouts.refresh(dayKey: today.dayKey)
+        }
+        .onChange(of: environment.dataVersion) {
+            Task { await environment.workouts.refresh(dayKey: today.dayKey) }
+        }
         .navigationTitle(showsTitle ? today.anchor.appFormatted(.dateTime.day().month(.abbreviated).year()) : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(showsTitle ? .visible : .hidden, for: .navigationBar)
@@ -112,6 +119,19 @@ private struct DayLogContent: View {
                 SnapButton { snap(.camera) }
                     .disabled(!environment.hasActiveKey)
                     .onLongPressGesture { snap(.library) }
+                    .overlay(alignment: .leading) {
+                        Button(action: describe) {
+                            Image(systemName: "text.bubble")
+                                .font(.system(size: 17))
+                                .foregroundStyle(Theme.Color.textSecondary)
+                                .frame(width: 44, height: 44)
+                                .background(Circle().fill(Theme.Color.surface))
+                        }
+                        .disabled(!environment.hasActiveKey)
+                        .offset(x: -68)
+                        .accessibilityLabel(Text("Describe a meal"))
+                        .accessibilityIdentifier("describeButton")
+                    }
                     .overlay(alignment: .trailing) {
                         Button { snap(.library) } label: {
                             Image(systemName: "photo.on.rectangle")
@@ -131,6 +151,11 @@ private struct DayLogContent: View {
         .padding(.vertical, Theme.Spacing.s)
     }
 
+    private func describe() {
+        Haptics(settings: environment.settings).snap()
+        capture.describe(for: today.anchor)
+    }
+
     private func snap(_ source: PhotoSource) {
         Haptics(settings: environment.settings).snap()
         if environment.isMock && ProcessInfo.processInfo.arguments.contains("-mockPhoto") {
@@ -144,6 +169,8 @@ private struct DayLogContent: View {
 
 private struct DayMealsList: View {
     @Query private var meals: [Meal]
+    @Environment(AppEnvironment.self) private var environment
+    private var workouts: WorkoutCalories { environment.workouts }
     let today: TodayViewModel
     let capture: CaptureViewModel
 
@@ -203,7 +230,7 @@ private struct DayMealsList: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(Theme.Color.textSecondary)
-            KcalSummary(eaten: today.total(for: meals), target: today.targetKcal)
+            KcalSummary(eaten: today.total(for: meals), target: today.targetKcal, workoutKcal: workouts.kcal(for: today.dayKey))
         }
         .panel()
         .padding(.horizontal, Theme.Spacing.l)

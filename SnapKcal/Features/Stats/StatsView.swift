@@ -18,10 +18,19 @@ struct StatsView: View {
             DayLogView(mode: .day(DayKey.startOfDay(route.dayKey)))
         }
         .task {
-            if viewModel == nil { viewModel = StatsViewModel(store: environment.store) }
+            if viewModel == nil { viewModel = StatsViewModel(store: environment.store, workouts: environment.workouts) }
             viewModel?.load()
+            await refreshWorkouts()
         }
         .onChange(of: environment.dataVersion) { viewModel?.load() }
+        .onChange(of: viewModel?.anchor) { Task { await refreshWorkouts() } }
+        .onChange(of: viewModel?.period) { Task { await refreshWorkouts() } }
+    }
+
+    private func refreshWorkouts() async {
+        guard let interval = viewModel?.currentInterval else { return }
+        await environment.workouts.refresh(interval)
+        viewModel?.load()
     }
 }
 

@@ -18,11 +18,22 @@ struct AIModel: Codable, Identifiable, Hashable, Sendable {
 struct AnalysisContext: Sendable {
     let goal: Goal
     let targetKcal: Int
+    let workoutKcal: Int
     let eatenTodayKcal: Int
     let localTime: String
     let languageName: String
-    let userNote: String?
     let detail: AnalysisDetail
+}
+
+/// One user message in a meal conversation plus the model's earlier answer to it (nil for the turn being analysed).
+struct ConversationTurn: Sendable, Equatable {
+    let imageJPEG: Data?
+    let text: String?
+    let reply: MealAnalysis?
+
+    var trimmedText: String? {
+        text?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+    }
 }
 
 struct AnalysisResult: Sendable {
@@ -43,12 +54,19 @@ struct AnalysisOptions: Sendable {
 protocol AIProvider: Sendable {
     var provider: Provider { get }
     func listModels(apiKey: String) async throws -> [AIModel]
-    func analyze(imageJPEG: Data, context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult
+    func analyze(turns: [ConversationTurn], context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult
 }
 
-extension AIProvider {
-    func test(model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
-        let context = AnalysisContext(goal: .maintain, targetKcal: 2000, eatenTodayKcal: 0, localTime: "12:00", languageName: "English", userNote: nil, detail: .fast)
-        return try await analyze(imageJPEG: ImageProcessor.testImage(), context: context, model: model, apiKey: apiKey, options: options)
+extension AnalysisContext {
+    static let test = AnalysisContext(goal: .maintain, targetKcal: 2000, workoutKcal: 0, eatenTodayKcal: 0, localTime: "12:00", languageName: "English", detail: .fast)
+}
+
+extension ConversationTurn {
+    static var testImage: ConversationTurn {
+        ConversationTurn(imageJPEG: ImageProcessor.testImage(), text: nil, reply: nil)
     }
+}
+
+extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }

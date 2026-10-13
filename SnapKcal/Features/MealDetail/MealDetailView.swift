@@ -48,6 +48,7 @@ private struct MealDetailContent: View {
                 }
                 .foregroundStyle(Theme.Color.textPrimary)
                 .panel()
+                conversationSection
                 editSection
                 itemsSection
                 provenanceSection
@@ -80,6 +81,31 @@ private struct MealDetailContent: View {
                 .overlay(RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(Theme.Color.border, lineWidth: 1))
                 .accessibilityHidden(true)
         }
+    }
+
+    private var conversationSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            PanelTitle("Refine")
+            MealConversationView(meal: meal, isRefining: viewModel.isReanalyzing)
+            if viewModel.isReanalyzing && meal.orderedTurns.last?.reply != nil {
+                LoadingLabel(text: "Updating estimate…")
+            }
+            if let error = viewModel.refineError {
+                RefineErrorView(
+                    message: error,
+                    onRetry: { Task { await viewModel.retryFollowUp() } },
+                    onDiscard: viewModel.discardFollowUp
+                )
+            }
+            MessageComposer(placeholder: "Add details or a photo to refine", isBusy: viewModel.isReanalyzing) { image, text in
+                Task {
+                    await viewModel.sendFollowUp(image: image, text: text)
+                    kcalText = "\(meal.kcal)"
+                    name = meal.name
+                }
+            }
+        }
+        .panel()
     }
 
     private var editSection: some View {
@@ -150,7 +176,7 @@ private struct MealDetailContent: View {
             }
             if viewModel.isReanalyzing {
                 LoadingLabel(text: "Reading your plate…")
-            } else if !viewModel.availableModels.isEmpty, meal.photo != nil {
+            } else if !viewModel.availableModels.isEmpty, !meal.turns.isEmpty || meal.photo != nil {
                 Menu {
                     ForEach(viewModel.availableModels) { model in
                         Button("\(model.provider.displayName) · \(model.displayName)") {

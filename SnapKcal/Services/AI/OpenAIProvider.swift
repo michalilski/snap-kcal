@@ -9,23 +9,15 @@ enum OpenAIRequests {
         return request
     }
 
-    static func analyze(image: Data, context: AnalysisContext, modelId: String, apiKey: String, useSchema: Bool, useReasoning: Bool) -> URLRequest {
+    static func analyze(turns: [ConversationTurn], context: AnalysisContext, modelId: String, apiKey: String, useSchema: Bool, useReasoning: Bool) -> URLRequest {
         var request = URLRequest(url: baseURL.appending(path: "responses"))
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let content: [[String: Any]] = [
-            [
-                "type": "input_image",
-                "image_url": "data:image/jpeg;base64,\(image.base64EncodedString())",
-                "detail": context.detail == .fast ? "low" : "auto",
-            ],
-            ["type": "input_text", "text": Prompt.userContext(context)],
-        ]
         var body: [String: Any] = [
             "model": modelId,
             "instructions": Prompt.system(language: context.languageName, includeSchema: !useSchema),
-            "input": [["role": "user", "content": content]],
+            "input": input(turns: turns, context: context),
             "max_output_tokens": 2000,
             "store": false,
         ]
@@ -37,6 +29,25 @@ enum OpenAIRequests {
         }
         request.httpBody = HTTPClient.jsonBody(body)
         return request
+    }
+
+    static func input(turns: [ConversationTurn], context: AnalysisContext) -> [[String: Any]] {
+        turns.enumerated().flatMap { index, turn -> [[String: Any]] in
+            var content: [[String: Any]] = []
+            if let image = turn.imageJPEG {
+                content.append([
+                    "type": "input_image",
+                    "image_url": "data:image/jpeg;base64,\(image.base64EncodedString())",
+                    "detail": context.detail == .fast ? "low" : "auto",
+                ])
+            }
+            content.append(["type": "input_text", "text": Prompt.userText(for: turn, isFirst: index == 0, context: context)])
+            var messages: [[String: Any]] = [["role": "user", "content": content]]
+            if let reply = turn.reply {
+                messages.append(["role": "assistant", "content": [["type": "output_text", "text": reply.schemaJSONString]]])
+            }
+            return messages
+        }
     }
 
     static func isReasoningModel(_ id: String) -> Bool {
@@ -77,10 +88,10 @@ struct OpenAIProvider: AIProvider {
         }
     }
 
-    func analyze(imageJPEG: Data, context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
+    func analyze(turns: [ConversationTurn], context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
         let started = Date.now
         let request = OpenAIRequests.analyze(
-            image: imageJPEG, context: context, modelId: model.id, apiKey: apiKey,
+            turns: turns, context: context, modelId: model.id, apiKey: apiKey,
             useSchema: options.useSchema, useReasoning: options.useEffort
         )
         let data = try await client.send(request, modelId: model.id)

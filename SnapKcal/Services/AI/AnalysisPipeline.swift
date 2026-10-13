@@ -6,13 +6,13 @@ struct AnalysisPipeline {
     let settings: AppSettings
     var retryDelay: (TimeInterval?) -> Duration = { .seconds($0 ?? 2) }
 
-    func run(provider: any AIProvider, image: Data, context: AnalysisContext, model: AIModel, apiKey: String) async throws(AIError) -> AnalysisResult {
+    func run(provider: any AIProvider, turns: [ConversationTurn], context: AnalysisContext, model: AIModel, apiKey: String) async throws(AIError) -> AnalysisResult {
         var options = initialOptions(for: model)
         var retriedTransient = false
         var retriedDecoding = false
         while true {
             do {
-                return try await provider.analyze(imageJPEG: image, context: context, model: model, apiKey: apiKey, options: options)
+                return try await provider.analyze(turns: turns, context: context, model: model, apiKey: apiKey, options: options)
             } catch let error as AIError {
                 switch error {
                 case .badRequest(let message) where options.useEffort && mentions(message, ["reasoning", "effort"]):

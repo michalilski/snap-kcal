@@ -23,8 +23,10 @@
 		3AB71903F4B32DC19E7C2889 /* AISetupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D1B363D1A58E9E24C2FE07 /* AISetupSection.swift */; };
 		3B36C1DC6AC868A52588AB96 /* TabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A571ABE540B9D6DCB55C655 /* TabBar.swift */; };
 		3D9CD031B2065296E77DCC6E /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BA7E9A9C369EA28CBF1954 /* Enums.swift */; };
+		455BB845AEF5529A607CD7AF /* WorkoutCalories.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11749CA12BFCA6CAEEB224D /* WorkoutCalories.swift */; };
 		45CB17D6AD3003BDF865D71D /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB2FF25F6069F9216B6743A /* RequestBuilderTests.swift */; };
 		499A3D0C6ACC5B15135912C7 /* StoreAndCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B679ABD2E15A83F974D09A /* StoreAndCaptureTests.swift */; };
+		4D85A7677D863B8A336A0B24 /* MealTurn.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B78BE4F7A48008B25A8E22 /* MealTurn.swift */; };
 		521F7FF511228EA628588BBF /* Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EAAF7036C39505A1511CC10 /* Meal.swift */; };
 		52F01A4B197817F03539EC57 /* AnthropicProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4DC87096B8D02FFDCA30D3C /* AnthropicProvider.swift */; };
 		537269A717ACC03F3462CFD8 /* SnapKcalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C4E2671A61CEE0BC13554C /* SnapKcalApp.swift */; };
@@ -53,6 +55,7 @@
 		93B63890E082A3D10407231B /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4315C8D7100CEEC33CB66A8C /* TestSupport.swift */; };
 		95213159A5DF76ED1393CBCC /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C98A7B8A217650B12D821BB /* AppEnvironment.swift */; };
 		96CEF9133B8618FEB91668BB /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7444E04C5450BFCA837CB7 /* ExportService.swift */; };
+		971DCB2EA75B7C3A6182774A /* MealConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8305A464DB326294B4F7D9FC /* MealConversationView.swift */; };
 		98BA1F8AAEC7802F18B4C2F6 /* DayLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0949861190E6264B1DA4CB /* DayLogView.swift */; };
 		9A15C7A42A66B38B985AD9AE /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71ABE2D89EFC7A680846455 /* SettingsViewModel.swift */; };
 		9A37FC37E9F566456699FF3E /* openai_error_401.json in Resources */ = {isa = PBXBuildFile; fileRef = B624CB8AC9F592694150162B /* openai_error_401.json */; };
@@ -128,6 +131,7 @@
 		5A5C20DC056FA431D50651B6 /* AnalysisPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisPipeline.swift; sourceTree = "<group>"; };
 		5B75CA19FBFC5D668432D847 /* MealStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealStore.swift; sourceTree = "<group>"; };
 		5C98A7B8A217650B12D821BB /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		5CDD3C838F88BDAF69B3F052 /* SnapKcal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SnapKcal.entitlements; sourceTree = "<group>"; };
 		5DB2FF25F6069F9216B6743A /* RequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilderTests.swift; sourceTree = "<group>"; };
 		5F8FCBE70070CFCBB8044477 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		6827FB31B71252A9A8CE8CA4 /* StatsCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsCalculator.swift; sourceTree = "<group>"; };
@@ -142,6 +146,7 @@
 		7B0949861190E6264B1DA4CB /* DayLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayLogView.swift; sourceTree = "<group>"; };
 		7D0AC0DC9214F2708715D479 /* ModelFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFilter.swift; sourceTree = "<group>"; };
 		7F3B20FAD1861EAAFA609CF5 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		8305A464DB326294B4F7D9FC /* MealConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealConversationView.swift; sourceTree = "<group>"; };
 		84D1DD560B64C44379346AF8 /* SnapKcalTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SnapKcalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BE7D7B0CEA824646B245A30 /* NutritionCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionCalculatorTests.swift; sourceTree = "<group>"; };
 		8E8D232FE0C514719AE3773D /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
@@ -170,6 +175,7 @@
 		C7A92F66B50967D3BC076304 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		C87C1DF683DA4FF4AFE72AF4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C93AA13929B4D2C35AA5AD02 /* MealDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDetailViewModel.swift; sourceTree = "<group>"; };
+		D11749CA12BFCA6CAEEB224D /* WorkoutCalories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCalories.swift; sourceTree = "<group>"; };
 		D4A38FC3EBF32D747EEF2638 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		D50AE9F4747E9882A208E999 /* PulseIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulseIndicator.swift; sourceTree = "<group>"; };
 		DA46DFE305776251987B1D2F /* NutritionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionCalculator.swift; sourceTree = "<group>"; };
@@ -178,6 +184,7 @@
 		DD5536667820FDB35A02C1C6 /* CaptureViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureViewModel.swift; sourceTree = "<group>"; };
 		E04CC0FEFC2F25C77F0A496A /* openai_response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = openai_response.json; sourceTree = "<group>"; };
 		E093809379DB5EC6E34B11CA /* anthropic_error_429.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = anthropic_error_429.json; sourceTree = "<group>"; };
+		E1B78BE4F7A48008B25A8E22 /* MealTurn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTurn.swift; sourceTree = "<group>"; };
 		E36CD8F2905E6370C32248DA /* SnapKcalUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SnapKcalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E46D1A4BB4E0CF5F5DD4D58F /* anthropic_response.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = anthropic_response.json; sourceTree = "<group>"; };
 		E71ABE2D89EFC7A680846455 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
@@ -253,6 +260,7 @@
 				77463D14C2E75422BA9C09B3 /* ModelCatalog.swift */,
 				DA46DFE305776251987B1D2F /* NutritionCalculator.swift */,
 				6827FB31B71252A9A8CE8CA4 /* StatsCalculator.swift */,
+				D11749CA12BFCA6CAEEB224D /* WorkoutCalories.swift */,
 				DE5AA81A65527349C03359C0 /* AI */,
 			);
 			path = Services;
@@ -263,6 +271,7 @@
 			children = (
 				F995A36832D31BD23B54C9EF /* CameraPicker.swift */,
 				DD5536667820FDB35A02C1C6 /* CaptureViewModel.swift */,
+				8305A464DB326294B4F7D9FC /* MealConversationView.swift */,
 				B4BACB6615CBE04A7E6D99A9 /* MealResultSheet.swift */,
 			);
 			path = Capture;
@@ -290,6 +299,7 @@
 			children = (
 				C87C1DF683DA4FF4AFE72AF4 /* Assets.xcassets */,
 				19673904EB54C6CFCD207716 /* Info.plist */,
+				5CDD3C838F88BDAF69B3F052 /* SnapKcal.entitlements */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -336,6 +346,7 @@
 				F6BA7E9A9C369EA28CBF1954 /* Enums.swift */,
 				2EAAF7036C39505A1511CC10 /* Meal.swift */,
 				5B75CA19FBFC5D668432D847 /* MealStore.swift */,
+				E1B78BE4F7A48008B25A8E22 /* MealTurn.swift */,
 				464A9AC01A29B0C20E36523D /* UserProfile.swift */,
 				BF2439C4BF461C53AD1F3456 /* WeightEntry.swift */,
 			);
@@ -620,12 +631,14 @@
 				521F7FF511228EA628588BBF /* Meal.swift in Sources */,
 				BF22568DA36850F1D05BFCD5 /* MealAnalysis.swift in Sources */,
 				A0F7D1894A7A61BBC8CE73A7 /* MealAnalyzer.swift in Sources */,
+				971DCB2EA75B7C3A6182774A /* MealConversationView.swift in Sources */,
 				87188A4BB726852D49626F17 /* MealDetailView.swift in Sources */,
 				E1CDD04D5D35F27BDEB5CED7 /* MealDetailViewModel.swift in Sources */,
 				A0E9DFD89A851685A8431DD2 /* MealResultSheet.swift in Sources */,
 				C96A2A29F072E6399191A5E8 /* MealRow.swift in Sources */,
 				F7A7303970DFB6809171D5F6 /* MealSchema.swift in Sources */,
 				E25CACA48803C8CB9FC0061E /* MealStore.swift in Sources */,
+				4D85A7677D863B8A336A0B24 /* MealTurn.swift in Sources */,
 				88959FA85B34DD5BA6814B54 /* MetricText.swift in Sources */,
 				D303704DEE12753190614285 /* MockProvider.swift in Sources */,
 				85181AC8124A596E725380DC /* ModelCatalog.swift in Sources */,
@@ -653,6 +666,7 @@
 				CA2C7E42AD81734063793949 /* TodayViewModel.swift in Sources */,
 				B8C72AF69E8996F7F881EEF8 /* UserProfile.swift in Sources */,
 				04C891E8E9E9376DC2355880 /* WeightEntry.swift in Sources */,
+				455BB845AEF5529A607CD7AF /* WorkoutCalories.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -860,6 +874,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SnapKcal/Resources/SnapKcal.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = SnapKcal/Resources/Info.plist;
@@ -897,6 +912,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SnapKcal/Resources/SnapKcal.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = SnapKcal/Resources/Info.plist;

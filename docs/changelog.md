@@ -2,6 +2,27 @@
 
 Progress against `docs/build-plan.md`. Newest entries first.
 
+## 2026-10-13 — Workout calories (Apple Health) + meal conversations
+
+### What's implemented
+
+- **Workout calories:** reads HealthKit workouts (read-only) and adds only each workout's **active** calories to that day's kcal goal, summed across workouts; passive calories are ignored.
+  - Shown on TODAY ("2340 goal + 320 from workouts"); it also affects calendar colours, stats (on-target days, vs target) and the "remaining" kcal sent to the AI.
+  - Setup → Apple Health has a toggle (default on) and a "Connect Apple Health" button; access is also requested the first time TODAY opens.
+  - Code: `WorkoutCalories` + `HealthKitActivitySource` (`MockActivitySource` gives 320 kcal in `-mockAI`). Added `NSHealthShareUsageDescription` and the HealthKit entitlement.
+- **Meal conversations:** each meal is now a chat (`MealTurn` model: optional photo, optional text, stored estimate).
+  - The first message can be a photo, text, or both: SNAP / library open a compose step with an optional text field, and a new "describe" button (left of SNAP) starts a text-only meal.
+  - Refinements are unlimited: add text and/or a photo (camera or library, e.g. the ham packaging) in the result sheet or on the meal detail screen. Every turn returns a full updated kcal estimate and description for the whole meal; the meal row and totals follow the latest answer.
+  - Both providers get the whole conversation, with earlier answers as assistant messages. Follow-up failures keep the previous estimate, with Retry / Discard message.
+  - Undo delete restores the conversation. Meals logged before this change get their photo and note turned into turn one when you refine them.
+- **Any input language:** you can write in any language (e.g. Polish: "grahamka z Żabki"), including local products and shops; answers always come back in English.
+- **Tests:** 87 unit tests (new: multi-turn request building, text-only turn, follow-up refinement, failed follow-up, undo with conversation, workout bonus in stats, workouts toggle) and 2 UI tests (photo + follow-up, text-only), all passing on the simulator. The phone build is signed with the HealthKit entitlement under the free Personal Team.
+
+### What's next
+
+1. Install on the phone and check the HealthKit permission prompt plus real workout totals.
+2. Run a real Anthropic call through a multi-turn refinement.
+
 ## 2026-10-12 — Redesign: Nike style
 
 ### What changed

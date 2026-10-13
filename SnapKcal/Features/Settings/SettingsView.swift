@@ -30,6 +30,7 @@ private struct SettingsContent: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 profileSection
                 aiSection
+                healthSection
                 behaviourSection
                 dataSection
                 aboutSection
@@ -78,6 +79,27 @@ private struct SettingsContent: View {
             Toggle("Save last raw response", isOn: Binding(get: { viewModel.settings.saveRawResponse }, set: { viewModel.settings.saveRawResponse = $0 }))
                 .font(Theme.Font.micro)
         }
+        .panel()
+    }
+
+    private var healthSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            PanelTitle("Apple Health")
+            Toggle("Add workout calories to my daily goal", isOn: Binding(get: { viewModel.settings.useWorkouts }, set: { viewModel.settings.useWorkouts = $0 }))
+                .font(Theme.Font.link)
+                .accessibilityIdentifier("useWorkoutsToggle")
+            Text("Only active calories from workouts count, summed when you train more than once a day. Passive calories are ignored.")
+                .font(Theme.Font.micro)
+                .foregroundStyle(Theme.Color.textSecondary)
+            HStack {
+                Button("Connect Apple Health") { Task { await viewModel.connectHealth() } }
+                    .buttonStyle(.secondary)
+                    .disabled(!viewModel.settings.useWorkouts)
+                Spacer()
+                Text("Today: \(viewModel.todayWorkoutKcal) kcal").font(Theme.Font.data).foregroundStyle(Theme.Color.textSecondary)
+            }
+        }
+        .tint(Theme.Color.accent)
         .panel()
     }
 

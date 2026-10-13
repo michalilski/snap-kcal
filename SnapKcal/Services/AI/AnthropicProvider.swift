@@ -12,20 +12,16 @@ enum AnthropicRequests {
         return request
     }
 
-    static func analyze(image: Data, context: AnalysisContext, modelId: String, apiKey: String, useSchema: Bool, useEffort: Bool) -> URLRequest {
+    static func analyze(turns: [ConversationTurn], context: AnalysisContext, modelId: String, apiKey: String, useSchema: Bool, useEffort: Bool) -> URLRequest {
         var request = URLRequest(url: baseURL.appending(path: "messages"))
         request.httpMethod = "POST"
         authorize(&request, apiKey: apiKey)
         request.setValue("application/json", forHTTPHeaderField: "content-type")
-        let content: [[String: Any]] = [
-            ["type": "image", "source": ["type": "base64", "media_type": "image/jpeg", "data": image.base64EncodedString()]],
-            ["type": "text", "text": Prompt.userContext(context)],
-        ]
         var body: [String: Any] = [
             "model": modelId,
             "max_tokens": 1024,
             "system": Prompt.system(language: context.languageName, includeSchema: !useSchema),
-            "messages": [["role": "user", "content": content]],
+            "messages": messages(turns: turns, context: context),
         ]
         var outputConfig: [String: Any] = [:]
         if useSchema { outputConfig["format"] = ["type": "json_schema", "schema": MealSchema.schema] }
@@ -33,6 +29,21 @@ enum AnthropicRequests {
         if !outputConfig.isEmpty { body["output_config"] = outputConfig }
         request.httpBody = HTTPClient.jsonBody(body)
         return request
+    }
+
+    static func messages(turns: [ConversationTurn], context: AnalysisContext) -> [[String: Any]] {
+        turns.enumerated().flatMap { index, turn -> [[String: Any]] in
+            var content: [[String: Any]] = []
+            if let image = turn.imageJPEG {
+                content.append(["type": "image", "source": ["type": "base64", "media_type": "image/jpeg", "data": image.base64EncodedString()]])
+            }
+            content.append(["type": "text", "text": Prompt.userText(for: turn, isFirst: index == 0, context: context)])
+            var messages: [[String: Any]] = [["role": "user", "content": content]]
+            if let reply = turn.reply {
+                messages.append(["role": "assistant", "content": [["type": "text", "text": reply.schemaJSONString]]])
+            }
+            return messages
+        }
     }
 
     private static func authorize(_ request: inout URLRequest, apiKey: String) {
@@ -72,10 +83,10 @@ struct AnthropicProvider: AIProvider {
         return ModelFilter.anthropic(all)
     }
 
-    func analyze(imageJPEG: Data, context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
+    func analyze(turns: [ConversationTurn], context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
         let started = Date.now
         let request = AnthropicRequests.analyze(
-            image: imageJPEG, context: context, modelId: model.id, apiKey: apiKey,
+            turns: turns, context: context, modelId: model.id, apiKey: apiKey,
             useSchema: options.useSchema, useEffort: options.useEffort
         )
         let data = try await client.send(request, modelId: model.id)
