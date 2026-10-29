@@ -18,9 +18,12 @@ struct AnalysisPipeline {
                 case .badRequest(let message) where options.useEffort && mentions(message, ["reasoning", "effort"]):
                     options.useEffort = false
                     settings.modelsWithoutReasoning.insert(model.id)
-                case .badRequest(let message) where options.useSchema && mentions(message, ["format", "schema", "output_config", "image"]):
+                case .badRequest(let message) where options.useSchema && mentions(message, ["format", "schema", "output_config", "image", "citation"]):
                     options.useSchema = false
                     settings.modelsWithoutSchema.insert(model.id)
+                case .badRequest(let message) where options.useWebSearch && mentions(message, ["web_search", "tool"]):
+                    options.useWebSearch = false
+                    settings.modelsWithoutWebSearch.insert(model.id)
                 case .rateLimited(let retryAfter) where !retriedTransient:
                     retriedTransient = true
                     try? await Task.sleep(for: retryDelay(retryAfter))
@@ -43,13 +46,19 @@ struct AnalysisPipeline {
     func initialOptions(for model: AIModel) -> AnalysisOptions {
         let schemaAllowed = !settings.modelsWithoutSchema.contains(model.id)
         let effortAllowed = !settings.modelsWithoutReasoning.contains(model.id)
+        let searchAllowed = !settings.modelsWithoutWebSearch.contains(model.id)
         switch model.provider {
         case .openai:
-            return AnalysisOptions(useSchema: schemaAllowed, useEffort: effortAllowed && OpenAIRequests.isReasoningModel(model.id))
+            return AnalysisOptions(
+                useSchema: schemaAllowed,
+                useEffort: effortAllowed && OpenAIRequests.isReasoningModel(model.id),
+                useWebSearch: searchAllowed
+            )
         case .anthropic:
             return AnalysisOptions(
                 useSchema: schemaAllowed && model.supportsStructuredOutput == true,
-                useEffort: effortAllowed && model.supportsEffort == true
+                useEffort: effortAllowed && model.supportsEffort == true,
+                useWebSearch: searchAllowed
             )
         }
     }

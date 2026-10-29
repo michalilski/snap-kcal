@@ -14,6 +14,7 @@ final class AppSettings {
     var autoSave: Bool { didSet { defaults.set(autoSave, forKey: "autoSave") } }
     var haptics: Bool { didSet { defaults.set(haptics, forKey: "haptics") } }
     var modelsWithoutSchema: Set<String> { didSet { defaults.set(Array(modelsWithoutSchema), forKey: "modelsWithoutSchema") } }
+    var modelsWithoutWebSearch: Set<String> { didSet { defaults.set(Array(modelsWithoutWebSearch), forKey: "modelsWithoutWebSearch") } }
     var modelsWithoutReasoning: Set<String> { didSet { defaults.set(Array(modelsWithoutReasoning), forKey: "modelsWithoutReasoning") } }
     var saveRawResponse: Bool { didSet { defaults.set(saveRawResponse, forKey: "saveRawResponse") } }
     var testedModels: Set<String> { didSet { defaults.set(Array(testedModels), forKey: "testedModels") } }
@@ -30,6 +31,7 @@ final class AppSettings {
         autoSave = defaults.object(forKey: "autoSave") as? Bool ?? true
         haptics = defaults.object(forKey: "haptics") as? Bool ?? true
         modelsWithoutSchema = Set(defaults.stringArray(forKey: "modelsWithoutSchema") ?? [])
+        modelsWithoutWebSearch = Set(defaults.stringArray(forKey: "modelsWithoutWebSearch") ?? [])
         modelsWithoutReasoning = Set(defaults.stringArray(forKey: "modelsWithoutReasoning") ?? [])
         saveRawResponse = defaults.bool(forKey: "saveRawResponse")
         testedModels = Set(defaults.stringArray(forKey: "testedModels") ?? [])

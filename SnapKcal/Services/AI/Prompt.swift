@@ -1,12 +1,16 @@
 import Foundation
 
 enum Prompt {
-    static func system(language: String, includeSchema: Bool) -> String {
+    static func system(language: String, includeSchema: Bool, webSearch: Bool) -> String {
         let base = """
         You are a nutrition estimator inside a calorie-tracking app. You get a photo of food, a text description, or both.
         Estimate what was eaten and its energy content as accurately as possible.
 
         Rules:
+        - Nutrition label: if a photo shows a nutrition facts table or kcal printed on the packaging, those numbers are ground truth. Read them exactly (per 100 g/ml or per portion), multiply by the eaten amount and copy the macros. Never adjust, round to "typical" values or second-guess them. Set confidence high and keep kcal_low/kcal_high within ±5% of kcal_total.
+        - Packaged products: if a photo shows a packaged or branded product (chocolate bar, snack, drink, yogurt, ready meal, etc.), read the brand, product name, flavour and net weight from the packaging. Assume the whole package is eaten unless the user says otherwise.
+        \(packagedProductRule(webSearch: webSearch))
+        - In description, briefly name the source of the numbers when it is a label or manufacturer data (e.g. "label: 535 kcal/100 g").
         - Identify each distinct food/drink item, estimate its portion (grams or common units) using visual cues: plate (~26 cm), cutlery, hands, packaging, glass size.
         - Account for hidden calories typical for the dish: cooking oil, butter, dressings, sauces, sugar in drinks.
         - kcal_total must equal the sum of item kcal (rounded). kcal_low/kcal_high give a realistic range.
@@ -23,6 +27,15 @@ enum Prompt {
         """
         guard includeSchema else { return base }
         return base + "\n\nReturn only a JSON object matching this schema:\n" + MealSchema.jsonString
+    }
+
+    private static func packagedProductRule(webSearch: Bool) -> String {
+        guard webSearch else {
+            return "- For a recognised packaged product without a visible label, use the manufacturer's nutrition values you know for that exact product and variant, not values of similar products."
+        }
+        return """
+        - For a recognised packaged product without a visible nutrition label you MUST call web_search before answering. Search for the exact brand + product name + variant + "kcal" or "nutrition facts" (also in the packaging's language, e.g. "kalorie", "wartości odżywcze"). Prefer the manufacturer, retailers and Open Food Facts. Use the found kcal per 100 g or per piece with the net weight; never guess from similar products. Only if nothing is found, estimate and set confidence to medium. Do not search for home-made or restaurant food or when a nutrition label is visible.
+        """
     }
 
     static func userContext(_ context: AnalysisContext) -> String {

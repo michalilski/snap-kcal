@@ -66,6 +66,25 @@ struct ProviderTests {
         #expect(StubURLProtocol.requests.last?.jsonBody["text"] == nil)
     }
 
+    @Test func pipelineFallsBackWithoutWebSearch() async throws {
+        let settings = TestStore.settings()
+        let pipeline = AnalysisPipeline(settings: settings)
+        let error = Data(#"{"error":{"message":"Tool 'web_search' is not supported with this model."}}"#.utf8)
+        let provider = OpenAIProvider(client: StubURLProtocol.client([(400, error), (200, Fixture.data("openai_response"))]))
+        _ = try await pipeline.run(provider: provider, turns: turns, context: context, model: model, apiKey: "k")
+        #expect(settings.modelsWithoutWebSearch.contains("gpt-x"))
+        #expect(StubURLProtocol.requests.last?.jsonBody["tools"] == nil)
+    }
+
+    @Test func anthropicContinuesPausedTurn() async throws {
+        let paused = Data(#"{"content":[{"type":"server_tool_use","id":"srv_1","name":"web_search","input":{}}],"stop_reason":"pause_turn"}"#.utf8)
+        let provider = AnthropicProvider(client: StubURLProtocol.client([(200, paused), (200, Fixture.data("anthropic_response"))]))
+        let result = try await provider.analyze(turns: turns, context: context, model: .manual("c", provider: .anthropic), apiKey: "k", options: .init(useSchema: true, useEffort: false))
+        #expect(result.analysis.kcalTotal == 600)
+        let messages = try #require(StubURLProtocol.requests.last?.jsonBody["messages"] as? [[String: Any]])
+        #expect(messages.last?["role"] as? String == "assistant")
+    }
+
     @Test func anthropicModelListPagination() async throws {
         let page1 = Data(#"{"data":[{"id":"a","created_at":"2026-01-01T00:00:00Z"}],"has_more":true,"last_id":"a"}"#.utf8)
         let page2 = Data(#"{"data":[{"id":"b","created_at":"2026-02-01T00:00:00Z"}],"has_more":false,"last_id":"b"}"#.utf8)

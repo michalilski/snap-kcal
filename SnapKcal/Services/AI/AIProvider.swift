@@ -49,6 +49,7 @@ struct AnalysisResult: Sendable {
 struct AnalysisOptions: Sendable {
     var useSchema: Bool
     var useEffort: Bool
+    var useWebSearch = true
 }
 
 protocol AIProvider: Sendable {

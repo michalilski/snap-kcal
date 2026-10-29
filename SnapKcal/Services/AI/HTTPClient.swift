@@ -11,7 +11,7 @@ struct HTTPClient: Sendable {
 
     static func makeSession(protocolClasses: [AnyClass]? = nil) -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 45
+        configuration.timeoutIntervalForRequest = 90
         configuration.waitsForConnectivity = false
         if let protocolClasses { configuration.protocolClasses = protocolClasses }
         return URLSession(configuration: configuration)

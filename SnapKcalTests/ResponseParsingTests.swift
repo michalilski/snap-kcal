@@ -39,6 +39,28 @@ struct ResponseParsingTests {
         #expect(throws: AIError.truncated) { try AnthropicParser.parse(Data(json.utf8)) }
     }
 
+    @Test func anthropicReadsAnswerAfterWebSearch() throws {
+        let answer = String(decoding: Fixture.data("analysis_burrito"), as: UTF8.self)
+        let response: [String: Any] = [
+            "content": [
+                ["type": "text", "text": "Looking up {brand} values."],
+                ["type": "server_tool_use", "id": "srv_1", "name": "web_search", "input": ["query": "x"]],
+                ["type": "web_search_tool_result", "tool_use_id": "srv_1", "content": []],
+                ["type": "text", "text": answer],
+            ],
+            "stop_reason": "end_turn",
+        ]
+        let data = try JSONSerialization.data(withJSONObject: response)
+        #expect(try AnthropicParser.parse(data).0.kcalTotal == 600)
+    }
+
+    @Test func anthropicPausedTurn() throws {
+        let json = #"{"content":[{"type":"server_tool_use","id":"srv_1","name":"web_search","input":{}}],"stop_reason":"pause_turn"}"#
+        #expect(AnthropicParser.pausedContent(Data(json.utf8))?.count == 1)
+        #expect(AnthropicParser.pausedContent(Fixture.data("anthropic_response")) == nil)
+        #expect(throws: AIError.truncated) { try AnthropicParser.parse(Data(json.utf8)) }
+    }
+
     @Test func anthropicRefusal() {
         let json = #"{"content":[],"stop_reason":"refusal"}"#
         #expect(throws: AIError.refused) { try AnthropicParser.parse(Data(json.utf8)) }

@@ -9,22 +9,25 @@ enum OpenAIRequests {
         return request
     }
 
-    static func analyze(turns: [ConversationTurn], context: AnalysisContext, modelId: String, apiKey: String, useSchema: Bool, useReasoning: Bool) -> URLRequest {
+    static func analyze(turns: [ConversationTurn], context: AnalysisContext, modelId: String, apiKey: String, options: AnalysisOptions) -> URLRequest {
         var request = URLRequest(url: baseURL.appending(path: "responses"))
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         var body: [String: Any] = [
             "model": modelId,
-            "instructions": Prompt.system(language: context.languageName, includeSchema: !useSchema),
+            "instructions": Prompt.system(language: context.languageName, includeSchema: !options.useSchema, webSearch: options.useWebSearch),
             "input": input(turns: turns, context: context),
-            "max_output_tokens": 2000,
+            "max_output_tokens": 4000,
             "store": false,
         ]
-        if useSchema {
+        if options.useWebSearch {
+            body["tools"] = [["type": "web_search"]]
+        }
+        if options.useSchema {
             body["text"] = ["format": ["type": "json_schema", "name": "meal_analysis", "strict": true, "schema": MealSchema.schema]]
         }
-        if useReasoning {
+        if options.useEffort {
             body["reasoning"] = ["effort": "low"]
         }
         request.httpBody = HTTPClient.jsonBody(body)
@@ -65,7 +68,7 @@ enum OpenAIParser {
             throw .decoding("unexpected response shape")
         }
         if response.status == "incomplete" { throw .truncated }
-        guard let message = response.output.first(where: { $0.type == "message" }) else {
+        guard let message = response.output.last(where: { $0.type == "message" }) else {
             throw .decoding("no message output")
         }
         let parts = message.content ?? []
@@ -90,10 +93,7 @@ struct OpenAIProvider: AIProvider {
 
     func analyze(turns: [ConversationTurn], context: AnalysisContext, model: AIModel, apiKey: String, options: AnalysisOptions) async throws -> AnalysisResult {
         let started = Date.now
-        let request = OpenAIRequests.analyze(
-            turns: turns, context: context, modelId: model.id, apiKey: apiKey,
-            useSchema: options.useSchema, useReasoning: options.useEffort
-        )
+        let request = OpenAIRequests.analyze(turns: turns, context: context, modelId: model.id, apiKey: apiKey, options: options)
         let data = try await client.send(request, modelId: model.id)
         let (analysis, usage) = try OpenAIParser.parse(data)
         return AnalysisResult(

@@ -2,6 +2,14 @@
 
 Progress against `docs/build-plan.md`. Newest entries first.
 
+## 2026-10-15 — Packaged products: web search + nutrition labels
+
+- **Nutrition labels are ground truth:** kcal/macros printed on a package are read exactly and scaled to the eaten amount, never adjusted (confidence high, range ±5%).
+- **Packaged products use web search:** when a branded product is visible without a label, the model must call `web_search` (Anthropic `web_search_20250305`, max 3 uses; OpenAI `web_search`) for the exact product's nutrition facts and net weight instead of guessing. The description names the source.
+- Anthropic `pause_turn` responses are resumed (up to 2 continuations); the answer is read from the text after the last search block. OpenAI reads the last `message` output.
+- Models that reject the search tool fall back to no search and are remembered (`modelsWithoutWebSearch`); the prompt then asks for the exact product's manufacturer values.
+- `max_tokens` raised to 4096 (Anthropic) / 4000 (OpenAI) and the request timeout to 90 s to leave room for searching.
+
 ## 2026-10-13 — Workout calories (Apple Health) + meal conversations
 
 ### What's implemented
