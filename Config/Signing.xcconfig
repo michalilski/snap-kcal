@@ -1,0 +1,4 @@
+BUNDLE_ID_PREFIX = com.michalilski
+DEVELOPMENT_TEAM =
+
+#include? "Signing.local.xcconfig"

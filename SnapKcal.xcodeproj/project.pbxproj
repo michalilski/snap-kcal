@@ -115,6 +115,7 @@
 		10EB2939CEEA827B9A1670DF /* DayKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayKey.swift; sourceTree = "<group>"; };
 		19673904EB54C6CFCD207716 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		28436B4B1963574091B13DD8 /* BarBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarBackground.swift; sourceTree = "<group>"; };
+		2920DBFDDE628299E22FA324 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2A261870603AB1006AD7ED10 /* DTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DTOs.swift; sourceTree = "<group>"; };
 		2EAAF7036C39505A1511CC10 /* Meal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Meal.swift; sourceTree = "<group>"; };
 		30A3C46BAED7F9A7450822D5 /* MealAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealAnalyzer.swift; sourceTree = "<group>"; };
@@ -366,6 +367,7 @@
 		A2BB8A979EF5BF6F0E6A757A = {
 			isa = PBXGroup;
 			children = (
+				E03A8C36AF1CD73403B1651A /* Config */,
 				F8360A5006E8E3C52F9F6D4C /* SnapKcal */,
 				41FEDC3CA6EC9A50F3CEC7C1 /* SnapKcalTests */,
 				B2CA21AA4EBC9C1719441CAA /* SnapKcalUITests */,
@@ -432,6 +434,14 @@
 				33EE55A2F54666A19F45DCEF /* Prompt.swift */,
 			);
 			path = AI;
+			sourceTree = "<group>";
+		};
+		E03A8C36AF1CD73403B1651A /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				2920DBFDDE628299E22FA324 /* Signing.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		F8360A5006E8E3C52F9F6D4C /* SnapKcal */ = {
@@ -516,15 +526,15 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					18D96AB0AD33F7B101637184 = {
-						DevelopmentTeam = N5H5R9A2K2;
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					7A6DB5A9B43C9F2C29A6484E = {
-						DevelopmentTeam = N5H5R9A2K2;
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					DF830EEDC6EAAE3EFB44B053 = {
-						DevelopmentTeam = N5H5R9A2K2;
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 						TestTargetID = 18D96AB0AD33F7B101637184;
 					};
@@ -721,7 +731,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.SnapKcalUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).SnapKcalUITests";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SnapKcal;
@@ -738,7 +748,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.SnapKcalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).SnapKcalTests";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SnapKcal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SnapKcal";
@@ -747,6 +757,7 @@
 		};
 		3B072711727D61EC3F9580F7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2920DBFDDE628299E22FA324 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -781,7 +792,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = N5H5R9A2K2;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -806,6 +816,7 @@
 		};
 		78099E5CA5FDBA9E83F338FD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2920DBFDDE628299E22FA324 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -840,7 +851,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = N5H5R9A2K2;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -883,7 +893,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.snapkcal;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).snapkcal";
 				PRODUCT_NAME = SnapKcal;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -901,7 +911,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.SnapKcalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).SnapKcalTests";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SnapKcal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SnapKcal";
@@ -921,7 +931,7 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.snapkcal;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).snapkcal";
 				PRODUCT_NAME = SnapKcal;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -939,7 +949,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.michalilski.SnapKcalUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BUNDLE_ID_PREFIX).SnapKcalUITests";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SnapKcal;

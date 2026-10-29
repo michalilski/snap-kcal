@@ -1,14 +1,15 @@
 name: SnapKcal
 options:
-  bundleIdPrefix: com.michalilski
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
 settings:
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
-    DEVELOPMENT_TEAM: N5H5R9A2K2
     CODE_SIGN_STYLE: Automatic
 targets:
   SnapKcal:
@@ -18,7 +19,7 @@ targets:
       - path: SnapKcal
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.michalilski.snapkcal
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).snapkcal
         PRODUCT_NAME: SnapKcal
         TARGETED_DEVICE_FAMILY: "1"
         INFOPLIST_FILE: SnapKcal/Resources/Info.plist
@@ -41,6 +42,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).SnapKcalTests
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/SnapKcal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SnapKcal
         BUNDLE_LOADER: $(TEST_HOST)
   SnapKcalUITests:
@@ -53,6 +55,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).SnapKcalUITests
         TEST_TARGET_NAME: SnapKcal
 schemes:
   SnapKcal:

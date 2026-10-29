@@ -16,7 +16,10 @@ xcuserdata/
 # Test results
 *.xcresult
 
-# Secrets
-*.xcconfig.local
+# Secrets and local signing
 .env
 !.env.example
+*.xcconfig.local
+Config/Signing.local.xcconfig
+*.p12
+*.mobileprovision
